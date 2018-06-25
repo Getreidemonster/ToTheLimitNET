@@ -6,7 +6,7 @@ command /stats [<text>]:
 		if arg-1 exist:
 			set {_player} to arg-1
 		else:
-			set {_player} to "%player's name%" parsed as text
+			set {_player} to player's name parsed as text
 
 		set {_p} to "%{_player}%"
 		set {_pSkull} to skull of {_player} parsed as offlineplayer
