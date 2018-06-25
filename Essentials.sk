@@ -25,7 +25,7 @@ command /op [<text>]:
 			if arg does not exist:
 				send "%{TTLPrefix}% &cNutze /op <Spieler>"
 			else:
-				op ("%arg%" parsed as offlineplayer)
+				op (arg parsed as offlineplayer)
 				send "%{TTLPrefix}% &e&lOP &8&l» &a%arg% hat nun OP-Rechte"
 
 command /gm [<text>] [<text>]:
