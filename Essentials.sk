@@ -456,16 +456,23 @@ on inventory click:
 
 command /fly [<text>]:
 	trigger:
-		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
-			send "%{TTLPrefix}% {@NoPermsMsg}"
+		if command sender != CONSOLE:
+			if isRank(player's name, "Supporter"), isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_} to true
 		else:
+			set {_} to true
+
+		if {_}:
 			if arg does not exist:
-				if player's flight state is true:
-					set player's flight state to false
-					send "%{TTLPrefix}% &eFlugmodus deaktiviert!"
+				if command sender != CONSOLE:
+					if player's flight state is true:
+						set player's flight state to false
+						send "%{TTLPrefix}% &eFlugmodus deaktiviert!"
+					else:
+						set player's flight state to true
+						send "%{TTLPrefix}% &eFlugmodus aktiviert!"
 				else:
-					set player's flight state to true
-					send "%{TTLPrefix}% &eFlugmodus aktiviert!"
+					send "%{TTLPrefix}% &cNutze: /fly <Spieler>"
 			else:
 				set {_p} to arg parsed as player
 				if {_p} is not online:
@@ -477,28 +484,46 @@ command /fly [<text>]:
 					else:
 						set {_p}'s flight state to true
 						send "%{TTLPrefix}% &e%{_p}%'s Flugmodus aktiviert!"
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
 
 command /heal [<player>]:
 	trigger:
-		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
-			send "%{TTLPrefix}% {@NoPermsMsg}"
+		if command sender != CONSOLE:
+			if isRank(player's name, "Supporter"), isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_} to true
 		else:
+			set {_} to true
+
+		if {_}:
 			if arg-player exist:
 				heal arg-player
 				set arg-player's food level to 20
 				send "%{TTLPrefix}% &e%arg-player% wurde geheilt!"
 			else:
-				heal player
-				set player's food level to 20
-				send "%{TTLPrefix}% &eDu wurdest geheilt!"
+				if command sender != CONSOLE:
+					heal player
+					set player's food level to 20
+					send "%{TTLPrefix}% &eDu wurdest geheilt!"
+				else:
+					send "%{TTLPrefix}% &cNutze: /heal <Spieler>"
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
 
 command /kill [<text>]:
 	trigger:
-		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
-			send "%{TTLPrefix}% {@NoPermsMsg}"
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_} to true
 		else:
+			set {_} to true
+
+		if {_}:
 			if arg does not exist:
-				kill player
+				if command sender != CONSOLE:
+					kill player
+				else:
+					send "%{TTLPrefix}% &cNutze: /kill <Spieler>"
 			else:
 				set {_p} to arg parsed as player
 				if {_p} is not online:
@@ -506,25 +531,29 @@ command /kill [<text>]:
 				else:
 					kill {_p}
 					send "%{TTLPrefix}% &e%{_p}% wurde getötet!"
-
-command /smite [<text>] [<integer=1>]:
-	trigger:
-		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
-			send "%{TTLPrefix}% {@NoPermsMsg}"
 		else:
-			if arg-1 does not exist:
-				send "%{TTLPrefix}% &cNutze: /Smite <Spieler> [Zahl]"
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+
+command /smite [<text>]:
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_} to true
+		else:
+			set {_} to true
+
+		if {_}:
+			if arg does not exist:
+				send "%{TTLPrefix}% &cNutze: /Smite <Spieler>"
 			else:
-				set {_p} to arg-1 parsed as player
+				set {_p} to arg parsed as player
 				if {_p} is not online:
-					send "%{TTLPrefix}% &4%arg-1% &cist nicht Online!"
+					send "%{TTLPrefix}% &4%arg% &cist nicht Online!"
 				else:
-					set {Smite.%{_p}%} to true
-					loop arg-integer times:
-						strike lightning at {_p}
-						wait a tick
-					delete {Smite.%{_p}%}
+					strike lightning at {_p}
 					send "%{TTLPrefix}% &e%{_p}% wurde vom Blitz getroffen!"
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
 
 command /tphere [<text>]:
 	trigger:
@@ -558,17 +587,27 @@ command /invsee [<text>]:
 command /enchant <enchantment type>:
 	aliases: /ench
 	trigger:
-		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
-			send "%{TTLPrefix}% {@NoPermsMsg}"
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_} to true
 		else:
+			send "%{TTLPrefix}% {@NoConsole}"
+
+		if {_}:
 			enchant player's tool with arg
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
 
 command /forcechat [<text>] [<text>]:
-	aliases: /fc
+	aliases: /fch
 	trigger:
-		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
-			send "%{TTLPrefix}% {@NoPermsMsg}"
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_} to true
 		else:
+			set {_} to true
+
+		if {_}:
 			if arg-1 or arg-2 does not exist:
 				send "%{TTLPrefix}% &cNutze: /fc <Spieler> <Nachricht>"
 			else:
@@ -577,14 +616,41 @@ command /forcechat [<text>] [<text>]:
 					send "%{TTLPrefix}% &4%arg-1% &cist nicht Online!"
 				else:
 					make {_p} say coloured arg-2
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+
+command /forcecommand [<text>] [<text>]:
+	aliases: /fco, /fcmd
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_} to true
+		else:
+			set {_} to true
+
+		if {_}:
+			if arg-1 or arg-2 does not exist:
+				send "%{TTLPrefix}% &cNutze: /fc <Spieler> <Nachricht>"
+			else:
+				set {_p} to arg-1 parsed as player
+				if {_p} is not online:
+					send "%{TTLPrefix}% &4%arg-1% &cist nicht Online!"
+				else:
+					{_p} command arg-2
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
 
 command /cage [<text>]:
 	trigger:
-		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
-			send "%{TTLPrefix}% {@NoPermsMsg}"
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_} to true
 		else:
+			set {_} to true
+
+		if {_}:
 			if arg does not exist:
-				send "%{TTLPrefix}% &cNutze: /invsee <Spieler>"
+				send "%{TTLPrefix}% &cNutze: /cage <Spieler>"
 			else:
 				set {_p} to arg parsed as player
 				if {_p} is not online:
@@ -610,6 +676,8 @@ command /cage [<text>]:
 					set block 1 meter above {_wloc} to glass
 
 					set block 2 meters above {_p} to glass
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
 
 command /BuildMode [<player>] [<text>]:
 	trigger:
@@ -643,26 +711,43 @@ command /BuildMode [<player>] [<text>]:
 		else:
 			send "%{TTLPrefix}% &cDu hast keine Rechte für diesen Befehl!"
 
-command /void [<text>] <integer>:
+command /void [<text>]:
 	trigger:
-		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
-			send "%{TTLPrefix}% {@NoPermsMsg}"
+		if command sender != CONSOLE:
+			if isRank(player's name, "Supporter"), isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_} to true
 		else:
-			if arg-1 does not exist:
-				send "%{TTLPrefix}% &cNutze: /invsee <Spieler>"
+			set {_} to true
+
+		if {_}:
+			if arg does not exist:
+				send "%{TTLPrefix}% &cNutze: /void <Spieler>"
 			else:
-				set {_p} to arg-1 parsed as player
+				set {_p} to arg parsed as player
 				if {_p} is not online:
-					send "%{TTLPrefix}% &4%arg-1% &cist nicht Online!"
+					send "%{TTLPrefix}% &4%arg% &cist nicht Online!"
 				else:
 					loop blocks below {_p}:
-						if {_a} != arg-integer:
-							add 1 to {_a}
-							set loop-block to air
-							teleport {_p} to location of loop-block
-							wait a tick
+						set loop-block to air
+						teleport {_p} to location of loop-block
+						wait a tick
 
-							if y-coords of {_p} < 1:
-								exit loop
-						else:
+						if y-coords of {_p} < 1:
 							exit loop
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+
+command /clearchat:
+	aliases: /cc
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Supporter"), isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_} to true
+		else:
+			set {_} to true
+
+		if {_}:
+			loop 200 times:
+				send "" to ALL PLAYERS
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
