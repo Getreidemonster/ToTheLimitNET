@@ -1,0 +1,91 @@
+options:
+	prefix: &e&lLOCATIONS &8&l»
+
+on load:
+	create dir "plugins/Locations"
+
+command /location [<text>] [<text>]:
+	trigger:
+		if command sender == CONSOLE:
+			send "%{TTLPrefix}% {@prefix} &cNur Spieler können diesen Befehl ausführen..." to CONSOLE
+			stop
+
+		UpdateDatabaseVars(player's name, "RankType")
+		wait a tick
+		if {RankType.%player%} != "STAFF_PLAYER":
+			send "%{TTLPrefix}% {@prefix} &cDu hast nicht die notwendigen Rechte für diesen Befehl!"
+		else:
+			if arg-1 = "cre" or "create":
+				if arg-2 exist:
+					set {_loc} to arg-2
+					if file "plugins/Locations/%{_loc}%.yml" exists:
+						send "%{TTLPrefix}% {@prefix} &cDie Location &4%{_loc}% &cexistiert bereits!"
+					else:
+						create file "plugins/Locations/%{_loc}%.yml"
+						write "x: %x-coords of player%" at line 1 to file "plugins/Locations/%{_loc}%.yml"
+						write "y: %y-coords of player%" at line 2 to file "plugins/Locations/%{_loc}%.yml"
+						write "z: %z-coords of player%" at line 3 to file "plugins/Locations/%{_loc}%.yml"
+						write "world: %player's world%" at line 4 to file "plugins/Locations/%{_loc}%.yml"
+						write "yaw: %player's yaw%" at line 5 to file "plugins/Locations/%{_loc}%.yml"
+						write "pitch: %player's pitch%" at line 6 to file "plugins/Locations/%{_loc}%.yml"
+						send "%{TTLPrefix}% {@prefix} &aDie Location &e%{_loc}% &awurde erfolgreich &eerstellt&a!"
+				else:
+					send "%{TTLPrefix}% {@prefix} &cNutze: /location cre[ate] <Name>"
+				stop
+
+			if arg-1 = "del" or "delete":
+				if arg-2 exist:
+					set {_loc} to arg-2
+					if file "plugins/Locations/%{_loc}%.yml" does not exist:
+						send "%{TTLPrefix}% {@prefix} &cDie Location &4%{_loc}% existiert nicht&c!"
+					else:
+						delete file "plugins/Locations/%{_loc}%.yml"
+						send "%{TTLPrefix}% {@prefix} &aDie Location &e%{_loc}% &awurde erfolgreich &egelöscht&a!"
+				else:
+					send "%{TTLPrefix}% {@prefix} &cNutze: /location del[ete] <Name>"
+				stop
+
+			if arg-1 = "list":
+				if arg-2 = "GUI":
+					set {_locs::*} to dir "plugins/Locations/"'s files
+					open chest with 6 rows named "Locations>" to player
+					loop {_locs::*}:
+						add 1 to {_s}
+						set {_lv} to relative path of loop-value
+						replace all "plugins\Locations\" and ".yml" with "" in {_lv}
+
+						set {_x} to yml value "x" from file "plugins/Locations/%{_lv}%.yml"
+						set {_y} to yml value "y" from file "plugins/Locations/%{_lv}%.yml"
+						set {_z} to yml value "z" from file "plugins/Locations/%{_lv}%.yml"
+						set {_world} to yml value "world" from file "plugins/Locations/%{_lv}%.yml"
+						set {_yaw} to yml value "yaw" from file "plugins/Locations/%{_lv}%.yml"
+						set {_pitch} to yml value "pitch" from file "plugins/Locations/%{_lv}%.yml"
+
+						set slot {_s} - 1 of player's current inventory to emerald block named "&f» &a&n%{_lv}%" with lore "||&7&m--------------||&f» &aX: &f%{_x}%||&f» &aY: &f%{_y}%||&f» &aZ: &f%{_z}%||&f» &aYaw: &f%{_yaw}%||&f» &aPitch: &f%{_pitch}%||&f» &aWelt: &f%{_world}%||&7&m--------------||||&7Klicke um Dich zu teleportieren."
+
+			else:
+				loop 150 times:
+					send ""
+				send "%{TTLPrefix}% {@prefix} &e/location cre[ate] <Name> &7&l&o> &aErstellt eine neue Location"
+				send "%{TTLPrefix}% {@prefix} &e/location del[ete] <Name> &7&l&o> &aLöscht eine (bereits vorhandene) Location"
+				send "%{TTLPrefix}% {@prefix} &e/location list [GUI] &7&l&o> &aListet alle Locations auf"
+				send "%{TTLPrefix}% {@prefix} &e/location teleport/tp <Location> &7&l&o> &aTeleportiert Dich zur einer bestimmten Location"
+
+function teleport2location(p: player, loc: text):
+	set {_keywords::*} to "x", "y", "z", "world", "yaw" and "pitch"
+	loop {_keywords::*}:
+		set {_%loop-value%} to yaml value "%loop-value%" from file "plugins/Locations/%{_loc}%.yml"
+		
+		if "%loop-value%" = "world":
+			set {_%loop-value%} to {_%loop-value%} parsed as world
+		else:
+			set {_%loop-value%} to {_%loop-value%} parsed as number
+
+	teleport {_p} to location({_x}, {_y}, {_z}, {_world}, {_yaw}, {_pitch})
+
+on inventory click:
+	if "%inventory name of player's current inventory%" = "Locations>":
+		cancel event
+		set {_lv} to uncoloured name of clicked item
+		replace all "» " with "" in {_lv}
+		teleport2location(player, {_lv})

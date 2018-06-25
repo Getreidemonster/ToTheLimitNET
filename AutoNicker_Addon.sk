@@ -1,0 +1,87 @@
+options:
+	prefix: &e&lAUTONICKER &8&l»
+
+function getTrimmedUUIDfromName(player: text) :: text:
+	set {_uuid} to {_player} parsed as offlineplayer's uuid
+	set {_trimmed-uuid-parts::*} to {_uuid} split by "-"
+	return join {_trimmed-uuid-parts::*} by ""
+func "getSkin":
+	set {_p1} to parameter 1
+	set {_player} to {AutoNicker.%{_p1}%.Realname}
+	set {_trimmed-uuid} to getTrimmedUUIDfromName({_p1})
+
+	send request to "https://api.mineskin.org/generate/user/%{_trimmed-uuid}%"
+	map json last response's body to {_skin-api::*}
+
+	if "%{_skin-api::*}%" contains "Failed to get skin data":
+		send "{@prefix} &c&oKonnte den Skin für &4&o%{_p1}% &c&onicht laden!" to {_player} parsed as offlineplayer
+	else:
+		set transient "skinOutput" to skin with value {_skin-api::data::texture::value} signature {_skin-api::data::texture::signature}
+
+		$ access
+		set {_skin} to transient "skinOutput"
+
+	send "{@prefix} &6Du spielst nun als &e%{AutoNicker.%{_player}%.Nickname}%" to {_player} parsed as offlineplayer
+	send "&8» &a%{AutoNicker.%{_player}%.Nickname}% &7hat die Runde betreten!" to ALL PLAYERS
+	return
+
+function AutoNickerAddon(p: player, nickname: text):
+	set {_pn} to name of {_p}
+
+	set {AutoNicker.%{_pn}%.Nickname} to "%{_nickname}%"
+	set {AutoNicker.%{AutoNicker.%{_pn}%.Nickname}%.Realname} to "%{_pn}%"
+
+	access "getSkin" from "%{_nickname}%"
+	wait 1 tick
+
+	if {_skin} is set:
+		set {_p}'s displayed skin to {_skin}
+
+join:
+	UpdateDatabaseVars(player's name, "AutoNicker")
+	wait a tick
+	if {AutoNicker.%player%.Mode} = "AUTONICKER_ON":
+		add "GommeHD" to {_nicks::*}
+		add "Herobrine" to {_nicks::*}
+		add "Notch" to {_nicks::*}
+		add "ungespielt" to {_nicks::*}
+
+		loop all players:
+			if {AutoNicker.%loop-player%.Mode} = "AUTONICKER_ON":
+				remove "%{AutoNicker.%loop-player%.Nickname}%" from {_nicks::*}
+
+		if size of {_nicks::*} > 0:
+			set {_rndNickname} to random element out of {_nicks::*}
+			AutoNickerAddon(player, "%{_rndNickname}%")
+		else:
+			send "&8&m-------------------------------------------------"
+			send ""
+			send "{@prefix} &4Du konntest nicht genickt werden, da ALLE Nicknames auf dem selben Server sind!"
+			send "{@prefix} &cAutoNicker wird nun deaktiviert."
+			send ""
+			send "&8&m-------------------------------------------------"
+			reset player's displayed skin
+			delete {AutoNicker.%player%.ChangeSkinAttempt}
+			SetDatabaseVal(player's name, "", "AutoNicker", "AUTONICKER_OFF")
+			set {_c} to "%{DatabaseIO::PlayerDatas::Rank::Color::%{Rank.%player%}%}%"
+			send "&8» %{_c}%%player% &7hat die Runde betreten!" to ALL PLAYERS
+
+quit:
+	set leave message to ""
+	UpdateDatabaseVars(player's name, "AutoNicker")
+	wait a tick
+	if {AutoNicker.%player%.Mode} = "AUTONICKER_ON":
+		send "&8« &a%{AutoNicker.%player%.Nickname}% &7hat die Runde verlassen!" to ALL PLAYERS
+		delete {AutoNicker.%player%.Nickname}
+
+command /unnick:
+	trigger:
+		UpdateDatabaseVars(player's name, "AutoNicker")
+		wait a tick
+		if {AutoNicker.%player%.Mode} = "AUTONICKER_ON":
+			reset player's displayed skin
+			delete {AutoNicker.%player%.ChangeSkinAttempt}
+			SetDatabaseVal(player's name, "", "AutoNicker", "AUTONICKER_OFF")
+			send "{@prefix} &eDu wurdest erfolgreich unnickt!"
+		else:
+			send "{@prefix} &cDu bist gar nicht genickt!"

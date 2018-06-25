@@ -1,0 +1,35 @@
+options:
+	prefix: &e&lAUTONICKER &8&l»
+
+on rightclick with name tag:
+	if player's tool = name tag named "&eAutoNicker" with lore "||&7Rechtsklicke um es zu benutzen.":
+		cancel event
+
+		UpdateDatabaseVars(player's name, "AutoNicker")
+		wait a tick
+
+		if {AutoNicker.%player%.Mode} = "AUTONICKER_ON":
+			SetDatabaseVal(player's name, "", "AutoNicker", "AUTONICKER_OFF")
+			send "{@prefix} &cwurde deaktiviert!"
+		else:
+			SetDatabaseVal(player's name, "", "AutoNicker", "AUTONICKER_ON")
+			send "{@prefix} &awurde aktiviert!"
+
+join:
+	UpdateDatabaseVars(player's name, "AutoNicker")
+	wait a tick
+	if {AutoNicker.%player%.Mode} = "AUTONICKER_ON":
+		player command "/unnick"
+
+command /unnick:
+	trigger:
+		UpdateDatabaseVars(player's name, "AutoNicker")
+		wait a tick
+		if {AutoNicker.%player%.Mode} = "AUTONICKER_ON":
+			reset player's displayed skin
+			delete {AutoNicker.%player%.ChangeSkinAttempt}
+			SetDatabaseVal(player's name, "", "AutoNicker", "AUTONICKER_OFF")
+			send "{@prefix} &eDu wurdest erfolgreich unnickt!"
+		else:
+			send "{@prefix} &cDu bist gar nicht genickt!"
+

@@ -1,0 +1,11 @@
+command /l:
+	aliases: /hub, /lobby
+	trigger:
+		set {_servers::*} to all connected bungeecord servers
+		loop {_servers::*}:
+			if "%loop-value%" does not contain "Lobby-":
+				remove loop-value from {_servers::*}
+
+		set {_randomLobby} to random element out of {_servers::*}
+		send "&e&lLOBBY &8&l» &aVerbinde Dich mit &e%{_randomLobby}%..."
+		skungee connect bungeecord player "%player%" to bungeecord servers "%{_randomLobby}%"
