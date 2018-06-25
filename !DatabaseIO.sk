@@ -1,0 +1,397 @@
+options:
+	WebSocket-Host: 127.0.0.1
+	WebSocket-Port: 8080
+
+	TTLPrefix: &e&lTOTHELIMIT.NET &8&l»
+	CoinsPrefix: &e&lCOINS &8&l»
+	RankPrefix: &e&lRANK &8&l»
+
+on load:
+	set {TTLPrefix} to "{@TTLPrefix}"
+
+	set {DatabaseIO::PlayerDatas::Values::*} to "Coins", "RankName", "RankType" and "SpielerVerstecker"
+	set {DatabaseIO_WS} to new websocket "DatabaseIO_WS" connected to uri "ws://{@WebSocket-Host}:{@WebSocket-Port}"
+
+	set {DatabaseIO::PlayerDatas::Rank::Color::Owner} to "&4"
+	set {DatabaseIO::PlayerDatas::Rank::Color::Co-Owner} to "&4"
+	set {DatabaseIO::PlayerDatas::Rank::Color::Developer} to "&4"
+	set {DatabaseIO::PlayerDatas::Rank::Color::Admin} to "&4"
+	set {DatabaseIO::PlayerDatas::Rank::Color::Moderator} to "&c"
+	set {DatabaseIO::PlayerDatas::Rank::Color::Supporter} to "&9"
+	set {DatabaseIO::PlayerDatas::Rank::Color::Builder} to "&e"
+	set {DatabaseIO::PlayerDatas::Rank::Color::YouTuber} to "&5"
+	set {DatabaseIO::PlayerDatas::Rank::Color::TTL} to "&b"
+	set {DatabaseIO::PlayerDatas::Rank::Color::Premium} to "&6"
+	set {DatabaseIO::PlayerDatas::Rank::Color::Gamer} to "&a"
+
+	set {DatabaseIO::Prefix::Coins} to "{@CoinsPrefix}"
+	set {DatabaseIO::Prefix::Rank} to "{@RankPrefix}"
+	set {DatabaseIO::Prefix::Banned} to "{@TTLPrefix}"
+	set {DatabaseIO::Prefix::Temp-Ban} to "{@TTLPrefix}"
+
+function getMaxPlayers() :: integer:
+	set {_content::*} to file contents of "server.properties"
+	loop {_content::*}:
+		set {_} to loop-value
+		if "%{_}%" contains "max-players=":
+			set {_a::*} to {_} split at "="
+			return ({_a::2} parsed as integer)
+	return 0
+
+websocket client "DatabaseIO_WS":
+	on message:
+		set {_splittedMsg::*} to event-string split at "||"
+		if {_splittedMsg::1} == "DatabaseIO":
+			if {_splittedMsg::2} == "Report":
+				set {_reporter} to {_splittedMsg::3}
+				set {_p} to {_splittedMsg::4}
+				set {_reason} to {_splittedMsg::5}
+				set {_state} to {_splittedMsg::6}
+
+				if {_state} == "Success":
+					send "&e&lREPORT &8&l» &e%{_p}% &awurde erfolgreich wegen &e%{_reason}% &areportet!" to ({_reporter} parsed as offlineplayer)
+
+					loop all players:
+						if isRank(loop-player's name, "Supporter"), isRank(loop-player's name, "Moderator"), isRank(loop-player's name, "Admin"), isRank(loop-player's name, "Developer"), isRank(loop-player's name, "Co-Owner") or isRank(loop-player's name, "Owner"):
+							send "&e&lREPORT &8&l» &c%{_p}% &ewurde von &8» &c%{_reporter}% &ewegen &c%{_reason}% reportet!%nl%" to loop-player
+
+				else:
+					send "{@TTLPrefix} &e&lREPORT &8&l» &4%{_p}% &ckonnte nicht gefunden werden!" to ({_reporter} parsed as offlineplayer)
+
+			if {_splittedMsg::2} == "PlayerDatas":
+				if {_splittedMsg::3} == "getValReturn":
+					set {_p} to {_splittedMsg::5}
+					set {_val} to {_splittedMsg::6}
+
+					if {_splittedMsg::4} == "Coins":
+						set {Coins.%{_p}%} to ({_val} parsed as integer)
+						updateScoreboard(({_p} parsed as offlineplayer))
+
+					if {_splittedMsg::4} == "RankName":
+						set {Rank.%{_p}%} to {_val}
+						updateScoreboard(({_p} parsed as offlineplayer))
+					if {_splittedMsg::4} == "RankType":
+						set {RankType.%{_p}%} to {_val}
+
+					if {_splittedMsg::4} == "SpielerVerstecker":
+						set {LobbySystem.%{_p}%.SpielerVerstecker} to {_val}
+
+					if {_splittedMsg::4} == "Banned":
+						set {Essentials::%{_p}%::Banned} to {_val}
+						if {_val} == "NO_BANNED":
+							if file "plugins/Essentials/tmp/tempban/%{_p}%.yml" exists:
+								set {_content::*} to file contents of "plugins/Essentials/tmp/tempban/%{_p}%.yml"
+								delete file "plugins/Essentials/tmp/tempban/%{_p}%.yml"
+
+								loop {_content::*}:
+									set {_pardonSender} to loop-value
+
+								if "%{_pardonSender}%" == "CONSOLE":
+									send "{@TTLPrefix} &a%{_p}% wurde erfolgreich entbannt!" to CONSOLE
+								else:
+									send "{@TTLPrefix} &a%{_p}% wurde erfolgreich entbannt!" to ({_pardonSender} parsed as offlineplayer)
+					if {_splittedMsg::4} == "Banner":
+						set {Essentials::%{_p}%::Banner} to {_val}
+
+					if {_splittedMsg::4} == "Now-Temp-Ban":
+						set {Essentials::%{_p}%::Now-Temp-Ban} to {_val}
+					if {_splittedMsg::4} == "Timestamp-Temp-Ban":
+						set {Essentials::%{_p}%::Timestamp-Temp-Ban} to {_val}
+					if {_splittedMsg::4} == "Reason-Temp-Ban":
+						set {Essentials::%{_p}%::Reason-Temp-Ban} to {_val}
+
+					if {_splittedMsg::4} == "Muted":
+						set {Essentials::%{_p}%::Muted} to {_val}
+						if {_val} == "NO_MUTED":
+							if file "plugins/Essentials/tmp/tempmute/%{_p}%.yml" exists:
+								set {_content::*} to file contents of "plugins/Essentials/tmp/tempmute/%{_p}%.yml"
+								delete file "plugins/Essentials/tmp/tempmute/%{_p}%.yml"
+
+								loop {_content::*}:
+									set {_pardonSender} to loop-value
+
+								if "%{_pardonSender}%" == "CONSOLE":
+									send "{@TTLPrefix} &a%{_p}% wurde erfolgreich entmutet!" to CONSOLE
+								else:
+									send "{@TTLPrefix} &a%{_p}% wurde erfolgreich entmutet!" to ({_pardonSender} parsed as offlineplayer)
+
+					if {_splittedMsg::4} == "Muter":
+						set {Essentials::%{_p}%::Muter} to {_val}
+
+					if {_splittedMsg::4} == "Now-Temp-Mute":
+						set {Essentials::%{_p}%::Now-Temp-Mute} to {_val}
+					if {_splittedMsg::4} == "Timestamp-Temp-Mute":
+						set {Essentials::%{_p}%::Timestamp-Temp-Mute} to {_val}
+					if {_splittedMsg::4} == "Reason-Temp-Mute":
+						set {Essentials::%{_p}%::Reason-Temp-Mute} to {_val}
+
+					if {_splittedMsg::4} == "Enderperlen", "Paintball", "Raketenschweinchen", "Feuerwerke", "PrimedTNT" or "Melonen":
+						set {_vList::*} to {_val} split at "_"
+						set {_rVal} to {_vList::1} parsed as integer
+						set {Gadgets.%{_p}%.%{_splittedMsg::4}%} to {_rVal}
+						#send "&e{Gadgets.%{_p}%.%{_splittedMsg::4}%}: %{Gadgets.%{_p}%.%{_splittedMsg::4}%}%" to CONSOLE
+
+					if "%{_splittedMsg::4}%" contains "SkyWars-Kit-":
+						set {_list::*} to {_splittedMsg::4} split at "-"
+						set {_kit} to {_list::3}
+						set {SkyWars::%{_splittedMsg::5}%::%{_kit}%} to {_splittedMsg::6}
+
+					if "%{_splittedMsg::4}%" contains "SkyWars-Datas-":
+						set {_list::*} to {_splittedMsg::4} split at "-"
+						set {_datatype} to {_list::3}
+						set {_p} to {_splittedMsg::5}
+						set {_newVals::*} to {_splittedMsg::6} split at "_"
+						set {_newVal} to {_newVals::4} parsed as integer
+						set {SkyWars.%{_p}%.%{_datatype}%} to {_newVal}
+
+					if "%{_splittedMsg::4}%" == "AutoNicker":
+						set {_p} to {_splittedMsg::5} parsed as offlineplayer
+						set {AutoNicker.%{_p}%.Mode} to {_splittedMsg::6}
+
+				if {_splittedMsg::3} == "setValReturn":
+					set {_ep} to {_splittedMsg::5}
+					set {_p} to {_splittedMsg::6}
+					set {_newVal} to {_splittedMsg::7}
+					set {_extraSChar} to ""
+
+					if {_ep} != "CONSOLE":
+						if "%{_ep}%" == "%{_p}%":
+							set {_p} to "Du"
+							set {_extraSChar} to "s"
+
+						if {_splittedMsg::8} == "Success":
+							if {_splittedMsg::4} == "Coins":
+								send "{@CoinsPrefix} &e%{_p}% ha%{_extraSChar}%t nun %{_newVal}% Coins" to ({_ep} parsed as offlineplayer)
+
+							if {_splittedMsg::4} == "RankName":
+								send "{@RankPrefix} &e%{_p}% ha%{_extraSChar}%t nun den Rank %{_newVal}%" to ({_ep} parsed as offlineplayer)
+
+							updateScoreboard(({_splittedMsg::6} parsed as offlineplayer))
+
+						else:
+							if {_splittedMsg::4} == "Coins" or "RankName" or "Banned" or "Now-Temp-Ban":
+								set {_prefix} to "%{DatabaseIO::Prefix::%{_splittedMsg::4}%}%"
+								send "%{_prefix}% &4%{_p}% &ckonnte nicht gefunden werden!" to ({_ep} parsed as offlineplayer)
+
+					else:
+						if {_splittedMsg::8} == "Success":
+							if {_splittedMsg::4} == "Coins":
+								send "{@CoinsPrefix} &e%{_p}% ha%{_extraSChar}%t nun %{_newVal}% Coins" to CONSOLE
+
+							if {_splittedMsg::4} == "RankName":
+								send "{@RankPrefix} &e%{_p}% ha%{_extraSChar}%t nun den Rank %{_newVal}%" to CONSOLE
+
+						else:
+							if {_splittedMsg::4} == "Coins" or "RankName" or "Banned" or "Temp-Ban":
+								set {_prefix} to "%{DatabaseIO::Prefix::%{_splittedMsg::4}%}%"
+								send "%{_prefix}% &4%{_p}% &ckonnte nicht gefunden werden!" to CONSOLE
+
+function createDefaultPlayerDatas(p: text):
+	if "%{DatabaseIO_WS}'s websocket state%" = "open":
+		websocket send "DatabaseIO||PlayerDatas||createDefault||%{_p}%" through {DatabaseIO_WS}
+
+function UpdateDatabaseVars(p: text, neededVal: text):
+	if "%{DatabaseIO_WS}'s websocket state%" = "open":
+		websocket send "DatabaseIO||PlayerDatas||getVal||%{_p}%||%{_neededVal}%" through {DatabaseIO_WS}
+		wait a tick
+		if {_neededVal} != "AutoNicker":
+			websocket send "DatabaseIO||PlayerDatas||getVal||%{_p}%||AutoNicker" through {DatabaseIO_WS}
+
+		if ({_p} parsed as player) is online:
+			if {AutoNicker.%{_p}%.Mode} != "AUTONICKER_ON":
+				set {_c} to {DatabaseIO::PlayerDatas::Rank::Color::%{Rank.%{_p}%}%}
+				set ({_p} parsed as offlineplayer)'s nametag prefix to "%{_c}%"
+			else:
+				set ({_p} parsed as offlineplayer)'s nametag prefix to "&a%{AutoNicker.%{_p}%.Nickname}%"
+
+every tick:
+	loop all players:
+		if {AutoNicker.%loop-player%.Mode} != "AUTONICKER_ON":
+			set {_c} to {DatabaseIO::PlayerDatas::Rank::Color::%{Rank.%loop-player%}%}
+			set loop-player's tablist name to " %{_c}%%{Rank.%loop-player%}% &8» %{_c}%%loop-player% "
+		else:
+			set loop-player's tablist name to " &aGamer &8» &a%{AutoNicker.%loop-player%.Nickname}% "
+
+		set tablist header and footer for bungeecord player "%loop-player%" to "&eToTheLimit.net &aLobby%nl%" and "%nl%  &7Spieler reporten? &c/report [Spieler]  %nl%  &7Shop: &eshop.tothelimit.net  %nl%  &7TS³: &ets3.tothelimit.net"
+
+function SetDatabaseVal(p: text, ep: text, newValPrefix: text, newVal: text):
+	if "%{DatabaseIO_WS}'s websocket state%" = "open":
+		if {_newValPrefix} == "Coins" or "Gadgets":
+			set {_newVal} to {_newVal} parsed as integer
+		websocket send "DatabaseIO||PlayerDatas||setVal||%{_p}%||%{_ep}%||%{_newValPrefix}%||%{_newVal}%" through {DatabaseIO_WS}
+
+		UpdateDatabaseVars({_p}, {_newValPrefix})
+
+function isRank(p: text, r: text) :: boolean:
+	UpdateDatabaseVars({_p}, "RankName")
+	if "%{Rank.%{_p}%}%" = "%{_r}%":
+		return true
+	else:
+		return false
+
+function isStaff(p: text) :: boolean:
+	UpdateDatabaseVars({_p}, "RankType")
+	if "%{RankType.%{_p}%}%" = "STAFF_PLAYER":
+		return true
+	else:
+		return false
+
+function isNormal(p: text) :: boolean:
+	UpdateDatabaseVars({_p}, "RankType")
+	if "%{RankType.%{_p}%}%" = "NORMAL_PLAYER":
+		return true
+	else:
+		return false
+
+join:
+	createDefaultPlayerDatas(player's name)
+
+	wait 1 tick
+	loop {DatabaseIO::PlayerDatas::Values::*}:
+		UpdateDatabaseVars(player's name, loop-value)
+
+quit:
+	loop {DatabaseIO::PlayerDatas::Values::*}:
+		UpdateDatabaseVars(player's name, loop-value)
+
+# ######################
+# #    Chat-System     #
+# ######################
+on chat:
+	cancel event
+	UpdateDatabaseVars(player's name, "RankName")
+	UpdateDatabaseVars(player's name, "Muted")
+	UpdateDatabaseVars(player's name, "Now-Temp-Mute")
+	wait 1 tick
+	if {Essentials::%player%::Muted} == "NO_MUTED":
+		if {Essentials::%player%::Now-Temp-Mute} == "NO_NOW_TEMP_MUTE":
+			set {_c} to {DatabaseIO::PlayerDatas::Rank::Color::%{Rank.%player%}%}
+			send "%{_c}%%{Rank.%player%}% &8» %{_c}%%player% &8» %{_c}%%message%" to ALL PLAYERS
+
+# #######################
+# #    Coins-System     #
+# #######################
+command /coins [<text>]:
+	trigger:
+		if command sender != CONSOLE:
+			if arg does not exist:
+				set {_} to true
+			if arg = player's name:
+				set {_} to true
+
+			if {_}:
+				UpdateDatabaseVars(player's name, "Coins")
+				wait a ticks
+				send "{@CoinsPrefix} &eDu hast momentan %{Coins.%player%}% Coins"
+			else:
+				set {_p} to arg
+				UpdateDatabaseVars({_p}, "Coins")
+				wait a ticks
+				if {Coins.%{_p}%} = "File not found!":
+					send "{@CoinsPrefix} &4%{_p}% &ckonnte nicht gefunden werden!"
+				else if {Coins.%{_p}%} is not set:
+					send "{@CoinsPrefix} &4%{_p}% &ckonnte nicht gefunden werden!"
+				else:
+					send "{@CoinsPrefix} &e%{_p}% &6hat derzeit &e%{Coins.%{_p}%}% Coins"
+		else:
+			if arg does not exist:
+				send "{@TTLPrefix} &cDu bist kein Spieler..."
+			else:
+				set {_p} to arg
+				UpdateDatabaseVars({_p}, "Coins")
+				wait a ticks
+				if {Coins.%{_p}%} = "File not found!":
+					send "{@CoinsPrefix} &4%{_p}% &ckonnte nicht gefunden werden!"
+				else if {Coins.%{_p}%} is not set:
+					send "{@CoinsPrefix} &4%{_p}% &ckonnte nicht gefunden werden!"
+				else:
+					send "{@CoinsPrefix} &e%{_p}% &6hat derzeit &e%{Coins.%{_p}%}% Coins"
+command /setcoins [<text>] <text>:
+	trigger:
+		if command sender != CONSOLE:
+			UpdateDatabaseVars(player's name, "RankName")
+			wait a ticks
+			if isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_ALLOWED} to true
+				set {_sender} to player's name
+		else:
+			set {_ALLOWED} to true
+			set {_sender} to "CONSOLE"
+
+		if {_ALLOWED}:
+			if {_sender} == "CONSOLE":
+				if arg-1 does not exist:
+					send "{@CoinsPrefix} &cBitte gebe einen Spieler Namen an"
+				else:
+					SetDatabaseVal(arg-1, {_sender}, "Coins", arg-2)
+			else:
+				if arg-1 does not exist:
+					SetDatabaseVal(player's name, {_sender}, "Coins", arg-2)
+				else:
+					SetDatabaseVal(arg-1, {_sender}, "Coins", arg-2)
+		else:
+			send "{@TTLPrefix} &cDu hast keine Rechte für diesen Befehl!"
+
+# ######################
+# #    Rank-System     #
+# ######################
+command /rank [<text>]:
+	trigger:
+		if command sender != CONSOLE:
+			if arg does not exist:
+				set {_} to true
+			if arg = player's name:
+				set {_} to true
+
+			if {_}:
+				UpdateDatabaseVars(player's name, "RankName")
+				wait a ticks
+				send "{@RankPrefix} &eDu &6hast momentan den Rank &e%{Rank.%player%}%"
+			else:
+				set {_p} to arg
+				UpdateDatabaseVars({_p}, "RankName")
+				wait a ticks
+				if {Rank.%{_p}%} = "File not found!":
+					send "{@RankPrefix} &4%{_p}% &ckonnte nicht gefunden werden!"
+				else if {Rank.%{_p}%} is not set:
+					send "{@RankPrefix} &4%{_p}% &ckonnte nicht gefunden werden!"
+				else:
+					send "{@RankPrefix} &e%{_p}% &6hat derzeit den Rank &e%{Rank.%{_p}%}%"
+		else:
+			if arg does not exist:
+				send "{@TTLPrefix} &cDu bist kein Spieler..."
+			else:
+				set {_p} to arg
+				UpdateDatabaseVars({_p}, "RankName")
+				wait a ticks
+				if {Rank.%{_p}%} = "File not found!":
+					send "{@RankPrefix} &4%{_p}% &ckonnte nicht gefunden werden!"
+				else if {Rank.%{_p}%} is not set:
+					send "{@RankPrefix} &4%{_p}% &ckonnte nicht gefunden werden!"
+				else:
+					send "{@RankPrefix} &e%{_p}% &6hat derzeit den Rank &e%{Rank.%{_p}%}%"
+command /setrank [<text>] <text>:
+	trigger:
+		if command sender != CONSOLE:
+			UpdateDatabaseVars(player's name, "RankName")
+			wait a ticks
+			if isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_ALLOWED} to true
+				set {_sender} to player's name
+		else:
+			set {_ALLOWED} to true
+			set {_sender} to "CONSOLE"
+
+		if {_ALLOWED}:
+			if {_sender} == "CONSOLE":
+				if arg-1 does not exist:
+					send "{@RankPrefix} &cBitte gebe einen Spieler Namen an"
+				else:
+					SetDatabaseVal(arg-1, {_sender}, "RankName", arg-2)
+			else:
+				if arg-1 does not exist:
+					SetDatabaseVal(player's name, {_sender}, "RankName", arg-2)
+				else:
+					SetDatabaseVal(arg-1, {_sender}, "RankName", arg-2)
+		else:
+			send "{@TTLPrefix} &cDu hast keine Rechte für diesen Befehl!"
