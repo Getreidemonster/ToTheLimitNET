@@ -1,0 +1,304 @@
+aliases:
+	sun flower = 175
+	pig meat = 319
+
+options:
+	prefix: &e&lGADGETS &8&l»
+	available_comsetics: 3
+
+on load:
+	set {Gadgets.ShopItem.Enderperlen.Amount} to 32
+	set {Gadgets.ShopItem.Enderperlen.Price} to 100
+
+	set {Gadgets.ShopItem.Paintball.Amount} to 32
+	set {Gadgets.ShopItem.Paintball.Price} to 125
+
+	set {Gadgets.ShopItem.Raketenschweinchen.Amount} to 24
+	set {Gadgets.ShopItem.Raketenschweinchen.Price} to 75
+
+	set {Gadgets.ShopItem.Feuerwerke.Amount} to 24
+	set {Gadgets.ShopItem.Feuerwerke.Price} to 100
+
+	set {Gadgets.ShopItem.PrimedTNT.Amount} to 16
+	set {Gadgets.ShopItem.PrimedTNT.Price} to 150
+
+	set {Gadgets.ShopItem.Melonen.Amount} to 16
+	set {Gadgets.ShopItem.Melonen.Price} to 150
+
+on inventory click:
+	if "%inventory name of player's current inventory%" = "Gadgets":
+		cancel event
+
+		set {_gadget} to uncoloured name of clicked item
+		set {_gadgets::*} to {_gadget} split at "|"
+		set {_gadget} to {_gadgets::1}
+		replace all " " with "" in {_gadget}
+		UpdateDatabaseVars(player's name, "%{_gadget}%")
+		wait a tick
+
+		set {_ucGadget} to convert text {_gadget} to uppercase
+
+		if "%{Gadgets.%player%.%{_gadget}%}%" = "0_%{_ucGadget}%" or "0":
+			openGadgetShop(player, "%{_gadget}%")
+		else:
+			if clicked item = ender pearl, gold horse armor, pig meat, firework rocket, TNT or melon block:
+				if slot 3 of player's inventory = enchanted book named "&dKosmetik Buch" with lore "||&7Rechtsklicke um es zu benutzen.":
+					set {_s} to 3
+				if slot 4 of player's inventory = enchanted book named "&dKosmetik Buch" with lore "||&7Rechtsklicke um es zu benutzen.":
+					set {_s} to 4
+
+				set {_gadgetItem} to clicked item
+				UpdateDatabaseVars(player's name, "%{_gadget}%")
+				wait a tick
+
+				set slot {_s} of player's inventory to {_gadgetItem}
+				send "{@prefix} &a%{_gadget}% erfolgreich ausgerüstet!"
+				send "{@prefix} &7&oLinksklicke mit Deinem Gadget, um Dein &d&oKosmetik-Buch &7&oItem wieder zuerlangen!"
+				close player's inventory
+
+	if "%inventory name of player's current inventory%" contains "» " and " kaufen":
+		set {_title::*} to inventory name of player's current inventory split at " "
+		set {_gadget} to {_title::2}
+		set {_price} to uncoloured lore of slot 22 of player's current inventory
+		replace all "||Preis: " and " Coins" with "" in {_price}
+		set {_price} to {_price} parsed as integer
+		set {_item} to uncoloured name of slot 22 of player's current inventory
+		replace all " kaufen" with "" in {_item}
+
+		UpdateDatabaseVars(player's name, "Coins")
+		UpdateDatabaseVars(player's name, "%{_gadget}%")
+		wait a tick
+
+		set {_amount} to {Gadgets.ShopItem.%{_gadget}%.Amount}
+		set {_newGadgetAmountUC} to convert text "%{_gadget}%" to uppercase
+
+		if clicked item = emerald block:
+			if {Coins.%player%} >= {_price}:
+				subtract {_price} from {Coins.%player%}
+				send "{@prefix} &c-%{_price}% Coins"
+				SetDatabaseVal(player's name, player's name, "Coins", "%{Coins.%player%}%")
+				set {_newGadgetAmount} to {Gadgets.%player%.%{_gadget}%} + {_amount}
+				SetDatabaseVal(player's name, "", "%{_gadget}%", "%{_newGadgetAmount}%_%{_newGadgetAmountUC}%")
+				wait a tick
+				UpdateDatabaseVars(player's name, "Coins")
+				send "{@prefix} &aDu hast Dir erfolgreich %{_item}% gekauft!"
+				UpdateDatabaseVars(player's name, "%{_gadget}%")
+				wait a tick
+
+				if player's tool = ender pearl:
+					set name of player's tool to "&5Enderperlen &8| &d%{Gadgets.%player%.%{_gadget}%}%"
+				if player's tool = gold horse armor:
+					set name of player's tool to "&ePaintball &8| &6%{Gadgets.%player%.%{_gadget}%}%"
+				if player's tool = pig meat:
+					set name of player's tool to "&dRaketenschweinchen &8| &f%{Gadgets.%player%.%{_gadget}%}%"
+				if player's tool = firework rocket:
+					set name of player's tool to "&6Feuerwerkskörper &8| &e%{Gadgets.%player%.%{_gadget}%}%"
+				if player's tool = TNT:
+					set name of player's tool to "&cPrimedTNT &8| &f%{Gadgets.%player%.%{_gadget}%}%"
+				if player's tool = melon block:
+					set name of player's tool to "&2Melonen &8| &a%{Gadgets.%player%.%{_gadget}%}%"
+
+				close player's inventory
+			else:
+				send "{@prefix} &cDu hast nicht genügend Coins!"
+				send "{@prefix} &cDir fehlen noch &4%{_price} - {Coins.%player%}% Coins&c!"
+				close player's inventory
+		if clicked item = redstone block:
+			send "{@prefix} &cKaufvorgang abgebrochen."
+			close player's inventory
+
+on rightclick with ender pearl:
+	if player's tool = ender pearl named "&5Enderperlen &8| &d%{Gadgets.%player%.Enderperlen}%":
+		cancel event
+
+		UpdateDatabaseVars(player's name, "Enderperlen")
+		wait a tick
+		set {Gadgets.%player%.Enderperlen} to {Gadgets.%player%.Enderperlen} parsed as integer
+
+		if {Gadgets.%player%.Enderperlen} > 0:
+			shoot ender pearl from player at speed 1
+			make player ride last shot ender pearl
+			set {Gadgets.%player%.Enderperlen} to {Gadgets.%player%.Enderperlen} - 1
+			SetDatabaseVal(player's name, "", "Enderperlen", "%{Gadgets.%player%.Enderperlen}%_ENDERPERLEN")
+			set name of player's tool to "&5Enderperlen &8| &d%{Gadgets.%player%.Enderperlen}%"
+		else:
+			openGadgetShop(player, "Enderperlen")
+
+on projectile hit:
+	projectile is an ender pearl
+	play ender signal at location .1 meter above event-location
+
+on rightclick with gold horse armor:
+	if player's tool = gold horse armor named "&ePaintball &8| &6%{Gadgets.%player%.Paintball}%":
+		cancel event
+
+		if {Gadgets.%player%.Paintball} > 0:
+			shoot snowball from player at speed 1
+		else:
+			openGadgetShop(player, "Paintball")
+
+on shoot:
+	shooter is a player
+	projectile is a snowball
+
+	if shooter's tool = gold horse armor named "&ePaintball &8| &6%{Gadgets.%shooter%.Paintball}%":
+		set {Gadgets.%shooter%.Paintball} to {Gadgets.%shooter%.Paintball} - 1
+		SetDatabaseVal(shooter's name, "", "Paintball", "%{Gadgets.%shooter%.Paintball}%_PAINTBALL")
+		set name of shooter's tool to "&ePaintball &8| &6%{Gadgets.%shooter%.Paintball}%"
+
+		cooldownItem(shooter, 1 second)
+
+on projectile hit:
+	projectile is a snowball
+	shooter is a player
+
+	if shooter's tool = gold horse armor named "&ePaintball &8| &6%{Gadgets.%shooter%.Paintball}%":
+		set {_block} to "159:%a random integer between 0 and 15%" parsed as item
+		set {_blocks::*} to 0, 44, 53, 67, 114, 109, 108, 126, 128, 156, 134, 135, 136, 139, 164, 163, 180, 182, 6, 30, 31, 32, 37, 38, 50, 39, 40, 78, 54, 65, 78, 81, 85, 101, 102, 106, 111, 113, 116, 120, 130, 145, 146, 160, 171, 175, 188, 189, 190, 192, 191, 321, 323, 355, 389, 390, 397, 425, 69, 70, 72, 76, 77, 96, 107, 131, 143, 147, 148, 151, 167, 183, 184, 185, 186, 187, 324, 330, 356, 331, 404, 427, 428, 429, 430, 431, 27, 28, 66, 83, 8, 9, 10, 11 and 157
+		loop blocks in radius 2 around projectile:
+			delete {_noplace}
+			loop-block is not air
+			loop {_blocks::*}:
+				id of loop-block is loop-value-2
+				set {_noplace} to true
+			{_noplace} is not set
+			metadata "Painted" of block at loop-block is not set
+			set {_restoreblocks::%{_place}%} to type of loop-block
+			set {_restore::%{_place}%} to location at loop-block
+			add 1 to {_place}
+			@noupdate::set block at loop-block to {_block}
+			set metadata "Painted" of block at loop-block to "true"
+			set {_loc} to location 1 meter above loop-block
+			drawDot count 100, particle "blockdust", material {_block}, speed 0.05, offsetXYZ 0.1, 0.1, 0.1, center {_loc}, visibleRange 32, keepFor 1 tick
+			#wait 1 tick
+		wait 3 seconds
+		loop {_restore::*}:
+			delete metadata "Painted" of block at location at loop-value
+			set block at location at loop-value to {_restoreblocks::%loop-index%}
+			wait 1 tick
+
+on rightclick with pig meat:
+	if player's tool = pig meat named "&dRaketenschweinchen &8| &f%{Gadgets.%player%.Raketenschweinchen}%":
+		if {Gadgets.%player%.Raketenschweinchen} > 0:
+			set {Gadgets.%player%.Raketenschweinchen} to {Gadgets.%player%.Raketenschweinchen} - 1
+			SetDatabaseVal(player's name, "", "Raketenschweinchen", "%{Gadgets.%player%.Raketenschweinchen}%_RAKETENSCHWEINCHEN")
+			set name of player's tool to "&dRaketenschweinchen &8| &f%{Gadgets.%player%.Raketenschweinchen}%"
+
+			cooldownItem(player, 3 seconds)
+
+			spawn pig at player
+			set {_} to last spawned pig
+			loop 20 times:
+				push {_} up at speed 0.115
+				push {_} forwards at speed 0.011
+				drawDot count 10, particle cloud, speed 0.04, center {_}'s location, visibleRange 32, pulseDelay 2, keepFor 1 tick
+				wait 1 tick
+
+				if loop-int = 20:
+					create explosion of force 2 at {_}
+					kill {_}
+		else:
+			openGadgetShop(player, "Raketenschweinchen")
+
+on rightclick with firework:
+	if player's tool = firework named "&6Feuerwerkskörper &8| &e%{Gadgets.%player%.Feuerwerke}%":
+		if {Gadgets.%player%.Feuerwerke} > 0:
+			set {Gadgets.%player%.Feuerwerke} to {Gadgets.%player%.Feuerwerke} - 1
+			SetDatabaseVal(player's name, "", "Feuerwerke", "%{Gadgets.%player%.Feuerwerke}%_FEUERWERKE")
+			set name of player's tool to "&6Feuerwerkskörper &8| &e%{Gadgets.%player%.Feuerwerke}%"
+
+			cooldownItem(player, 1 second)
+
+			add "red", "BLUE", "YELLOW", "PINK", "LIGHT GREEN", "LIME", "GREEN" and "white" to {_l::*}
+			set {_} to random element out of {_l::*}
+			set {_i} to random integer between 0 and 1
+
+			launch firework at player timed {_i} coloured {_}
+		else:
+			openGadgetShop(player, "Feuerwerke")
+
+on rightclick with TNT:
+	if player's tool = TNT named "&cPrimedTNT &8| &f%{Gadgets.%player%.PrimedTNT}%":
+		if {Gadgets.%player%.PrimedTNT} > 0:
+			set {Gadgets.%player%.PrimedTNT} to {Gadgets.%player%.PrimedTNT} - 1
+			SetDatabaseVal(player's name, "", "PrimedTNT", "%{Gadgets.%player%.PrimedTNT}%_PRIMEDTNT")
+			set name of player's tool to "&cPrimedTNT &8| &f%{Gadgets.%player%.PrimedTNT}%"
+
+			cooldownItem(player, 1 second)
+
+			set {_} to location 1.5 meters in front of player's head
+			spawn primed tnt at {_}
+			push spawned primed tnt (direction from player to targeted block) at speed 0.87
+		else:
+			openGadgetShop(player, "PrimedTNT")
+
+on rightclick with melon block:
+
+	if player's tool = melon block named "&2Melonen &8| &a%{Gadgets.%player%.Melonen}%":
+		if {Gadgets.%player%.Melonen} > 0:
+			set {Gadgets.%player%.Melonen} to {Gadgets.%player%.Melonen} - 1
+			SetDatabaseVal(player's name, "", "Melonen", "%{Gadgets.%player%.Melonen}%_MELONEN")
+			set name of player's tool to "&2Melonen &8| &a%{Gadgets.%player%.Melonen}%"
+
+			cooldownItem(player, 1 second)
+
+			make player shoot an item projectile of melon block at speed 0.87
+		else:
+			openGadgetShop(player, "Melonen")
+
+on item hit:
+	if "%event-item%" = "melon":
+		set {_loc} to location .125 meter above event-location
+		drawDot count 100, particle "blockdust", material melon, speed 0.15, offsetXYZ 0.25, 0.25, 0.25, center {_loc}, visibleRange 32, keepFor 1 tick
+		loop (random integer between 4 and 6) times:
+			drop melon slice at {_loc}
+		loop dropped items in radius 3 around {_loc}:
+			push loop-dropped item up at speed 0.75
+			push loop-dropped item (direction from {_loc} to loop-dropped item) at speed 0.5
+
+on pick up:
+	if event-item = melon slice:
+		cancel event
+		delete item
+		apply potion of speed of tier 2 to player for 4 seconds
+		set {_loc} to location of player
+		drawDot count 75, particle "blockdust", material melon, speed 0.15, offsetXYZ 0.25, 0.25, 0.25, center {_loc}, visibleRange 32, keepFor 1 tick
+
+on leftclick:
+	if player's tool = ender pearl, gold horse armor, pig meat, firework, TNT or melon block:
+		if "%uncoloured name of player's tool%" contains "Enderperlen ", "Paintball ", "Raketenschweinchen ", "Feuerwerkskörper ", "PrimedTNT " or "Melonen ":
+			cancel event
+			set player's tool to enchanted book named "&dKosmetik Buch" with lore "||&7Rechtsklicke um es zu benutzen."
+
+function openGadgetShop(p: player, gadget: text):
+	open chest with 6 rows named "» %{_gadget}% kaufen" to {_p}
+	loop 54 times:
+		set slot 54 - loop-int of {_p}'s current inventory to black glass named " "
+
+	if {_gadget} = "Enderperlen":
+		set {_gadgetItem} to ender pearl named "&5%{Gadgets.ShopItem.%{_gadget}%.Amount}%x Enderperlen kaufen" with lore "||&7Preis: &e%{Gadgets.ShopItem.%{_gadget}%.Price}% Coins"
+	if {_gadget} = "Paintball":
+		set {_gadgetItem} to gold horse armor named "&6%{Gadgets.ShopItem.%{_gadget}%.Amount}%x Paintball-Bälle kaufen" with lore "||&7Preis: &e%{Gadgets.ShopItem.%{_gadget}%.Price}% Coins"
+	if {_gadget} = "Raketenschweinchen":
+		set {_gadgetItem} to pig meat named "&d%{Gadgets.ShopItem.%{_gadget}%.Amount}%x Raketenschweinchen kaufen" with lore "||&7Preis: &e%{Gadgets.ShopItem.%{_gadget}%.Price}% Coins"
+	if {_gadget} = "Feuerwerke":
+		set {_gadgetItem} to firework named "&6%{Gadgets.ShopItem.%{_gadget}%.Amount}%x Feuerwerkskörper kaufen" with lore "||&7Preis: &e%{Gadgets.ShopItem.%{_gadget}%.Price}% Coins"
+	if {_gadget} = "PrimedTNT":
+		set {_gadgetItem} to TNT named "&c%{Gadgets.ShopItem.%{_gadget}%.Amount}%x PrimedTNTs kaufen" with lore "||&7Preis: &e%{Gadgets.ShopItem.%{_gadget}%.Price}% Coins"
+	if {_gadget} = "Melonen":
+		set {_gadgetItem} to melon block named "&2%{Gadgets.ShopItem.%{_gadget}%.Amount}%x Melonen kaufen" with lore "||&7Preis: &e%{Gadgets.ShopItem.%{_gadget}%.Price}% Coins"
+
+	set slot 22 of {_p}'s current inventory to {_gadgetItem}
+
+	loop 3 times:
+		set slot (26 + loop-int) of {_p}'s current inventory to emerald block named "&aKAUFEN"
+		set slot (35 + loop-int) of {_p}'s current inventory to emerald block named "&aKAUFEN"
+		set slot (44 + loop-int) of {_p}'s current inventory to emerald block named "&aKAUFEN"
+
+		set slot (32 + loop-int) of {_p}'s current inventory to redstone block named "&cABBRECHEN"
+		set slot (41 + loop-int) of {_p}'s current inventory to redstone block named "&cABBRECHEN"
+		set slot (50 + loop-int) of {_p}'s current inventory to redstone block named "&cABBRECHEN"
+
+	UpdateDatabaseVars({_p}'s name, "Coins")
+	wait a tick
+	set slot 4 of {_p}'s current inventory to sun flower named "&eCoins: %{Coins.%{_p}%}%"

@@ -1,0 +1,34 @@
+options:
+	prefix: &e&lSTATS &8&l»
+
+command /stats [<text>]:
+	trigger:
+		if arg-1 exist:
+			set {_player} to arg-1
+		else:
+			set {_player} to "%player's name%" parsed as text
+
+		set {_p} to "%{_player}%"
+		set {_pSkull} to skull of {_player} parsed as offlineplayer
+
+		open chest with 5 rows named "Stats » %{_p}%" to player
+		set slot 4 of player's current inventory to {_pSkull} named "&e%{_p}%'s Stats"
+
+		while true:
+			if "%inventory name of player's current inventory%" = "Stats » %{_p}%":
+				UpdateDatabaseVars({_p}, "SkyWars-Datas-Kills")
+				UpdateDatabaseVars({_p}, "SkyWars-Datas-Tode")
+				UpdateDatabaseVars({_p}, "SkyWars-Datas-Wins")
+				UpdateDatabaseVars({_p}, "SkyWars-Datas-PR")
+
+				wait a tick
+
+				set {_STATS.KILLS} to {SkyWars.%{_p}%.Kills}
+				set {_STATS.TODE} to {SkyWars.%{_p}%.Tode}
+				set {_STATS.WINS} to {SkyWars.%{_p}%.Wins}
+				set {_STATS.PR} to {SkyWars.%{_p}%.PR}
+
+				set slot 19 of player's current inventory to feather named "&f&nSkyWars" with lore "||&3Kills: &e%{_STATS.KILLS}%||&3Tode: &e%{_STATS.TODE}%||&3Gewonnen: &e%{_STATS.WINS}%||&3Gespielte Runden: &e%{_STATS.PR}%||"
+			else:
+				exit loop
+			wait a tick

@@ -1,0 +1,170 @@
+aliases:
+	sun flower = 175
+	pig meat = 319
+
+options:
+	prefix: &e&lGADGETS &8&l»
+	available_comsetics: 3
+
+on load:
+	delete {Kosmetik::Gadgets::*}
+
+	add "Enderperlen" to {Kosmetik::Gadgets::*}
+	add "Paintball" to {Kosmetik::Gadgets::*}
+	add "Raketenschweinchen" to {Kosmetik::Gadgets::*}
+	add "Feuerwerke" to {Kosmetik::Gadgets::*}
+	add "PrimedTNT" to {Kosmetik::Gadgets::*}
+	add "Melonen" to {Kosmetik::Gadgets::*}
+
+on rightclick with enchanted book:
+	if player's tool = enchanted book named "&dKosmetik Buch" with lore "||&7Rechtsklicke um es zu benutzen.":
+		cancel event
+		openKosmetikBuch(player, player's location)
+
+function openKosmetikBuch(p: player, loc: location):
+	delete {KosmetikBuch.%{_p}%.Clicked}
+	set {KosmetikBuch.%{_p}%} to location of {_p}
+	
+	set {_holoLoc} to location 2.5 meters in front of {_loc}
+	set {_holoLoc} to location 3.33 meters above {_holoLoc}
+	set {KosmetikBuch.%{_p}%.Hologram.Loc_Title} to location of {_holoLoc}
+	set {_holoLoc_items} to location 1.33 meter below {_holoLoc}
+	
+	createHologram({_p}, "%{_p}%-KosmetikBuch-Holo_Title", "&d&nWähle eine Kategorie aus;ItemStack:enchanted_book;", {_holoLoc})
+
+	# Partikel-Effekte
+	set {_holoLoc_item1} to location 2.5 meters left of {_holoLoc_items}
+	set {KosmetikBuch.%{_p}%.Hologram.Loc_Item1} to location of {_holoLoc_item1}
+	createHologram({_p}, "%{_p}%-KosmetikBuch-Holo_Item1", "&cPartikel-Effekte;ItemStack:nether_star;", {_holoLoc_item1})
+	set {KosmetikBuch.%{_p}%} to location of {_p}
+
+
+	# Gadgets
+	set {_holoLoc_item2} to location of {_holoLoc_items}
+	set {KosmetikBuch.%{_p}%.Hologram.Loc_Item2} to location of {_holoLoc_item2}
+	createHologram({_p}, "%{_p}%-KosmetikBuch-Holo_Item2", "&fGadgets;ItemStack:snow_ball;", {_holoLoc_item2})
+	set {KosmetikBuch.%{_p}%} to location of {_p}
+
+
+	# Truhen
+	set {_holoLoc_item3} to location 2.5 meters right of {_holoLoc_items}
+	set {KosmetikBuch.%{_p}%.Hologram.Loc_Item3} to location of {_holoLoc_item3}
+	createHologram({_p}, "%{_p}%-KosmetikBuch-Holo_Item3", "&5Truhe öffnen;ItemStack:ender_chest;", {_holoLoc_item3})
+	set {KosmetikBuch.%{_p}%} to location of {_p}
+
+
+
+	while true:
+		if distance between {_p} and {KosmetikBuch.%{_p}%} is more than 4:
+			closeKosmetikBuch({_p})
+			if {KosmetikBuch.%{_p}%.Clicked} != true:
+				KosmetikBuchHoloClickParticle({_p}, {KosmetikBuch.%{_p}%.Hologram.Holo_Title})
+				loop {@available_comsetics} times:
+					KosmetikBuchHoloClickParticle({_p}, {KosmetikBuch.%{_p}%.Hologram.Loc_Item%loop-int%})
+			
+			exit loop
+
+		wait 1 second
+
+function closeKosmetikBuch(p: player):
+	delete holo object "%{_p}%-KosmetikBuch-Holo_Title"
+	delete holo object "%{_p}%-KosmetikBuch-Holo_Title_Back"
+	loop 3 times:
+		delete holo object "%{_p}%-KosmetikBuch-Holo_Item%loop-int%"
+	loop 4 times:
+		delete holo object "%{_p}%-KosmetikBuch-Gadgets_%loop-int%"
+
+function createHologram(p: player, id: text, text: text, loc: location):
+	create interactive client side holo object {_text} with id {_id} at {_loc} to {_p}
+
+function KosmetikBuchHoloClickParticle(p: player, loc: location):
+	drawDot count 10, particle endrod, speed 0.04, RGB 0, 0, 0, colorOffset .5, .5, .5, center {_loc}, id "%{_p}%-%{_loc}%", visibleRange 32, pulseDelay 2, keepFor 1 tick
+
+on hologram click:
+	set {_holoID} to uncoloured event-string
+	set {_loc} to location of player's target
+	set {_loc} to location 1 meter above {_loc}
+
+	if "%{_holoID}%" contains "%player%-KosmetikBuch-Holo_Item":
+		set {KosmetikBuch.%player%.Clicked} to true
+		KosmetikBuchHoloClickParticle(player, {_loc})
+		closeKosmetikBuch(player)
+
+		# Partikel-Effekte
+		if {_holoID} = "%player%-KosmetikBuch-Holo_Item1":
+			KosmetikBuchOpenManager(player, "Partikel-Effekte")
+		
+
+		# Gadgets
+		if {_holoID} = "%player%-KosmetikBuch-Holo_Item2":
+			KosmetikBuchOpenManager(player, "Gadgets")
+
+
+		# Truhen
+		if {_holoID} = "%player%-KosmetikBuch-Holo_Item3":
+			KosmetikBuchOpenManager(player, "Truhen")
+
+function KosmetikBuchOpenManager(p: player, kosmetik: text):
+	if {_kosmetik} = "Gadgets":
+		open chest with 6 rows named "Gadgets" to {_p}
+		loop 54 times:
+			set slot 54 - loop-int of {_p}'s current inventory to black glass named " "
+
+		while true:
+			if "%inventory name of {_p}'s current inventory%" = "Gadgets":
+				UpdateDatabaseVars({_p}'s name, "Coins")
+				wait a tick
+				set slot 4 of {_p}'s current inventory to sun flower named "&eCoins: %{Coins.%{_p}%}%"
+
+				loop {Kosmetik::Gadgets::*}:
+					UpdateDatabaseVars({_p}'s name, loop-value)
+				
+				wait a tick
+
+				set slot 19 of {_p}'s current inventory to ender pearl named "&5Enderperlen &8| &d%{Gadgets.%{_p}%.Enderperlen}%"
+				set slot 21 of {_p}'s current inventory to gold horse armor named "&ePaintball &8| &6%{Gadgets.%{_p}%.Paintball}%"
+				set slot 23 of {_p}'s current inventory to pig meat named "&dRaketenschweinchen &8| &f%{Gadgets.%{_p}%.Raketenschweinchen}%"
+				set slot 25 of {_p}'s current inventory to firework rocket named "&6Feuerwerkskörper &8| &e%{Gadgets.%{_p}%.Feuerwerke}%"
+
+				set slot 29 of {_p}'s current inventory to TNT named "&cPrimedTNT &8| &f%{Gadgets.%{_p}%.PrimedTNT}%"
+				set slot 31 of {_p}'s current inventory to melon block named "&2Melonen &8| &a%{Gadgets.%{_p}%.Melonen}%"
+
+			else:
+				exit loop
+			wait 1 tick
+
+	if {_kosmetik} = "Partikel-Effekte":
+		open chest with 6 rows named "Partikel-Effekte" to {_p}
+		loop 54 times:
+			set slot 54 - loop-int of {_p}'s current inventory to black glass named " "
+		
+		while true:
+			if "%inventory name of {_p}'s current inventory%" = "Partikel-Effekte":
+				UpdateDatabaseVars({_p}'s name, "Coins")
+				wait a tick
+				set slot 4 of {_p}'s current inventory to sun flower named "&eCoins: %{Coins.%{_p}%}%"
+
+				UpdateDatabaseVars({_p}'s name, "PartikelEffekt-Inferno")
+				
+				wait a tick
+
+				set slot 19 of {_p}'s current inventory to ender pearl named "&5Enderperlen &8| &d%{Gadgets.%{_p}%.Enderperlen}%"
+				set slot 21 of {_p}'s current inventory to gold horse armor named "&ePaintball &8| &6%{Gadgets.%{_p}%.Paintball}%"
+				set slot 23 of {_p}'s current inventory to pig meat named "&dRaketenschweinchen &8| &f%{Gadgets.%{_p}%.Raketenschweinchen}%"
+				set slot 25 of {_p}'s current inventory to firework rocket named "&6Feuerwerkskörper &8| &e%{Gadgets.%{_p}%.Feuerwerke}%"
+
+				set slot 29 of {_p}'s current inventory to TNT named "&cPrimedTNT &8| &f%{Gadgets.%{_p}%.PrimedTNT}%"
+				set slot 31 of {_p}'s current inventory to melon block named "&2Melonen &8| &a%{Gadgets.%{_p}%.Melonen}%"
+
+			else:
+				exit loop
+			wait 1 tick
+
+function cooldownItem(p: player, cd: timespan):
+	set {_slot} to "%{_p}'s hotbar slot%"
+	replace all "inventory slot " and " of %{_p}%" with "" in {_slot}
+	set {_slot} to {_slot} parsed as integer
+	set {_item} to slot {_slot} of {_p}'s inventory
+	set slot {_slot} of {_p}'s inventory to barrier named "&c&oWarte noch etwas..."
+	wait {_cd}
+	set slot {_slot} of {_p}'s inventory to {_item}

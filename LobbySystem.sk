@@ -1,0 +1,192 @@
+options:
+	NoPerms: &cDu hast keine Rechte für diesen Befehl!
+
+on load:
+	set {Map} to "Lobby"
+	set time in world "%{Map}%" to 12:00pm
+	set weather in world "%{Map}%" to sun
+
+at 12:01pm:
+	set time in world "%{Map}%" to 12:00pm
+
+on weather change:
+	cancel event
+	set weather in event-world to sun
+
+function LobbyItems(p: player):
+	delete {BuildMode.%{_p}%}
+	clear {_p}'s inventory
+	set {_p}'s level progress to 0.99
+	set {_p}'s flight state to true
+
+	set slot 0 of {_p}'s inventory to compass named "&9Navigator" with lore "||&7Rechtsklicke um es zu benutzen."
+	reveal all players from {_p}
+
+	UpdateDatabaseVars({_p}'s name, "SpielerVerstecker")
+	UpdateDatabaseVars({_p}'s name, "RankName")
+	wait 3 ticks
+	
+	if {LobbySystem.%{_p}%.SpielerVerstecker} == "Alle Spieler sichtbar":
+		set slot 1 of {_p}'s inventory to light green dye named "&aAlle Spieler sichtbar" with lore "||&7Rechtsklicke um es zu benutzen."
+	
+	if {LobbySystem.%{_p}%.SpielerVerstecker} == "Nur Premium-Spieler sichtbar":
+		set slot 1 of {_p}'s inventory to orange dye named "&6Nur Premium-Spieler sichtbar" with lore "||&7Rechtsklicke um es zu benutzen."
+		loop all players:
+			loop-player != {_p}
+			if {Rank.%loop-player%} != "Premium" or "TTL":
+				hide loop-player from {_p}
+	
+	if {LobbySystem.%{_p}%.SpielerVerstecker} == "Nur Teamler sichtbar":
+		set slot 1 of {_p}'s inventory to purple dye named "&5Nur Teamler sichtbar" with lore "||&7Rechtsklicke um es zu benutzen."
+		loop all players:
+			loop-player != {_p}
+			if {Rank.%loop-player%} != "Builder", "Supporter", "Moderator", "Admin", "Developer", "Co-Owner" or "Owner":
+				hide loop-player from {_p}
+	
+	if {LobbySystem.%{_p}%.SpielerVerstecker} == "Alle Spieler unsichtbar":
+		set slot 1 of {_p}'s inventory to red dye named "&cAlle Spieler unsichtbar" with lore "||&7Rechtsklicke um es zu benutzen."
+		hide all players from {_p}
+	
+	set slot 7 of {_p}'s inventory to {_p}'s skull named "&9Freunde" with lore "||&7Links-/Rechtsklicke um es zu benutzen."
+	set slot 8 of {_p}'s inventory to nether star named "&cLobby Switcher" with lore "||&7Rechtsklicke um es zu benutzen."
+
+	if {Rank.%{_p}%} != "Gamer":
+		set slot 3 of {_p}'s inventory to enchanted book named "&dKosmetik Buch" with lore "||&7Rechtsklicke um es zu benutzen."
+		set slot 5 of {_p}'s inventory to glowing gold block named "&6ToTheServers" with lore "||&7Rechtsklicke um es zu benutzen."
+		if {Rank.%{_p}%} = "YouTuber", "Moderator", "Admin", "Developer", "Co-Owner" or "Owner":
+			set slot 4 of {_p}'s inventory to name tag named "&eAutoNicker" with lore "||&7Rechtsklicke um es zu benutzen."
+	else:
+		set slot 4 of {_p}'s inventory to enchanted book named "&dKosmetik Buch" with lore "||&7Rechtsklicke um es zu benutzen."
+
+on join:
+	set join message to ""
+	LobbyItems(player)
+	teleport2location(player, "LobbySpawn")
+
+on quit:
+	delete {BuildMode.%player%}
+	set leave message to ""
+
+command /lobby:
+	aliases: /spawn, /l, /hub
+	trigger:
+		LobbyItems(player)
+		teleport2location(player, "LobbySpawn")
+
+on break:
+	if {BuildMode.%player%} != true:
+		cancel event
+
+on place:
+	if {BuildMode.%player%} != true:
+		cancel event
+
+on inventory click:
+	if {BuildMode.%player%} != true:
+		cancel event
+
+on damage:
+	if {BuildMode.%attacker%} != true:
+		cancel event
+
+on drop:
+	if {BuildMode.%player%} != true:
+		cancel event
+
+on pickup:
+	if {BuildMode.%player%} != true:
+		cancel event
+
+on click on trapdoor:
+	if {BuildMode.%player%} != true:
+		cancel event
+
+on offhand switch:
+	if {BuildMode.%player%} != true:
+		cancel event
+
+on rightclick with dye:
+	if "%uncoloured name of player's tool%" = "Alle Spieler sichtbar":
+		SetDatabaseVal(player's name, player's name, "SpielerVerstecker", "Nur Premium-Spieler sichtbar")
+		UpdateDatabaseVars(player's name, "SpielerVerstecker")
+		set {_} to true
+
+		reveal all players from event-player
+	
+	else if "%uncoloured name of player's tool%" = "Nur Premium-Spieler sichtbar":
+		SetDatabaseVal(player's name, player's name, "SpielerVerstecker", "Nur Teamler sichtbar")
+		UpdateDatabaseVars(player's name, "SpielerVerstecker")
+		set {_} to true
+
+		reveal all players from event-player
+		loop all players:
+			loop-player != event-player
+			if {Rank.%loop-player%} != "Premium" or "TTL":
+				hide loop-player from event-player
+	
+	else if "%uncoloured name of player's tool%" = "Nur Teamler sichtbar":
+		SetDatabaseVal(player's name, player's name, "SpielerVerstecker", "Alle Spieler unsichtbar")
+		UpdateDatabaseVars(player's name, "SpielerVerstecker")
+		set {_} to true
+
+		reveal all players from event-player
+		loop all players:
+			loop-player != event-player
+			if {Rank.%loop-player%} != "Builder", "Supporter", "Moderator", "Admin", "Developer", "Co-Owner" or "Owner":
+				hide loop-player from event-player
+
+	else if "%uncoloured name of player's tool%" = "Alle Spieler unsichtbar":
+		SetDatabaseVal(player's name, player's name, "SpielerVerstecker", "Alle Spieler sichtbar")
+		UpdateDatabaseVars(player's name, "SpielerVerstecker")
+		set {_} to true
+
+		hide all players from event-player
+
+	wait a tick
+
+	if {LobbySystem.%player%.SpielerVerstecker} == "Alle Spieler sichtbar":
+		set slot 1 of player's inventory to light green dye named "&aAlle Spieler sichtbar" with lore "||&7Rechtsklicke um es zu benutzen."
+	if {LobbySystem.%player%.SpielerVerstecker} == "Nur Premium-Spieler sichtbar":
+		set slot 1 of player's inventory to orange dye named "&6Nur Premium-Spieler sichtbar" with lore "||&7Rechtsklicke um es zu benutzen."
+	if {LobbySystem.%player%.SpielerVerstecker} == "Nur Teamler sichtbar":
+		set slot 1 of player's inventory to purple dye named "&5Nur Teamler sichtbar" with lore "||&7Rechtsklicke um es zu benutzen."
+	if {LobbySystem.%player%.SpielerVerstecker} == "Alle Spieler unsichtbar":
+		set slot 1 of player's inventory to red dye named "&cAlle Spieler unsichtbar" with lore "||&7Rechtsklicke um es zu benutzen."
+
+on hunger meter change:
+	cancel event
+	set player's food level to 20
+	heal player
+
+on creeper power:
+	cancel event
+
+on explosion:
+	cancel event
+	create safe explosion of force 2
+
+on projectile hit:
+	delete projectile
+
+on any move:
+	if "%block at player%" == "active light pressure plate":
+		show mobspawner flames at player
+		push player up at speed .5
+		push player forwards at speed 2.25
+
+on flight toggle:
+	if player's gamemode = SURVIVAL:
+		if "%player's level progress%" = "0.99":
+			cancel event
+			remove 0.99 from player's level progress
+			push player forwards at speed 2.25
+			push player up at speed .677
+			set {DoubleJump.%player%} to true
+			set player's flight state to false
+
+on any move:
+	if {DoubleJump.%player%}:
+		if block below player != air:
+			delete {DoubleJump.%player%}
+			set player's level progress to 0.99
+			set player's flight state to true

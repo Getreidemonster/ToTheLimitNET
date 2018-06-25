@@ -1,0 +1,56 @@
+command /troll:
+	trigger:
+		if player is op:
+			player command "/buildmode on"
+			set player's gamemode to CREATIVE
+			hide player from all players
+			give player tnt named "&cPrimedTNT"
+			give player stick of knockback 50 named "&bOP-Knüppel ;3"
+			give player feather named "&e&lScaffoldWalk &8| &cOFF"
+
+			set {Troll::%player%::ScaffoldWalk} to "OFF"
+		else:
+			send "%{TTLPrefix}% &cDu hast nicht die notwendigen Rechte für diesen Befehl!"
+
+command /untroll:
+	trigger:
+		set player's gamemode to SURVIVAL
+		hide player from all players
+		remove tnt named "&cPrimedTNT" from player's inventory
+		remove stick of knockback 50 named "&bOP-Knüppel ;3" from player's inventory
+		remove feather named "&e&lScaffoldWalk &8| &cOFF" from player's inventory
+
+		set {Troll::%player%::ScaffoldWalk} to "OFF"
+
+		reveal player to all players
+
+
+on rightclick with TNT:
+	if player's tool = tnt named "&cPrimedTNT":
+		cancel event
+		loop 15 times:
+			spawn primed tnt at player
+			push last spawned primed tnt (direction from player to targeted block) at speed (distance between player and targeted block)
+			push last spawned primed tnt up at speed 0.125
+			wait a tick
+
+on rightclick with feather:
+	if player's tool = feather named "&e&lScaffoldWalk &8| &cOFF":
+		cancel event
+		set player's tool to feather named "&e&lScaffoldWalk &8| &aON"
+		set {Troll::%player%::ScaffoldWalk} to "ON"
+		set {Troll::%player%::ScaffoldWalkBlockBelow} to block below player
+		if {Troll::%player%::ScaffoldWalkBlockBelow} = air:
+			set {Troll::%player%::ScaffoldWalkBlockBelow} to sandstone
+		if {Troll::%player%::ScaffoldWalkBlockBelow} is not set:
+			set {Troll::%player%::ScaffoldWalkBlockBelow} to sandstone
+
+	else if player's tool = feather named "&e&lScaffoldWalk &8| &aON":
+		cancel event
+		set player's tool to feather named "&e&lScaffoldWalk &8| &cOFF"
+		set {Troll::%player%::ScaffoldWalk} to "OFF"
+
+on any move:
+	if {Troll::%player%::ScaffoldWalk} = "ON":
+		reveal player to all players
+		set block below player to {Troll::%player%::ScaffoldWalkBlockBelow}
