@@ -1,2 +1,668 @@
-load:
-	broadcast "&eHello from Github."
+options:
+	NoPermsMsg: &cDu hast keine Rechte für diesen Befehl!
+	NoConsole: &cDu bist kein Spieler...
+
+on load:
+	delete all entities
+
+on spawn:
+	if "%SPAWN REASON%" != "CUSTOM":
+		cancel event
+
+command /op [<text>]:
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				if arg does not exist:
+					op player
+					send "%{TTLPrefix}% &e&lOP &8&l» &aDu hast nun OP-Rechte"
+				else:
+					op (arg parsed as offlineplayer)
+					send "%{TTLPrefix}% &e&lOP &8&l» &a%arg% hat nun OP-Rechte"
+			else:
+				send "%{TTLPrefix}% {@NoPermsMsg}"
+		else:
+			if arg does not exist:
+				send "%{TTLPrefix}% &cNutze /op <Spieler>"
+			else:
+				op ("%arg%" parsed as offlineplayer)
+				send "%{TTLPrefix}% &e&lOP &8&l» &a%arg% hat nun OP-Rechte"
+
+command /gm [<text>] [<text>]:
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Builder"), isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_Essentials::Gamemode::ID::0} to "SURVIVAL"
+				set {_Essentials::Gamemode::ID::1} to "CREATIVE"
+				set {_Essentials::Gamemode::ID::2} to "ADVENTURE"
+				set {_Essentials::Gamemode::ID::3} to "SPECTATOR"
+
+				if arg-2 doesn't exist:
+					if arg-1 doesn't exist:
+						send "%{TTLPrefix}% &cNutze /gm <Zahl> [Spieler]"
+						stop
+					if arg-1 = "0", "SURVIVAL" or "SU":
+						set player's gamemode to SURVIVAL
+					if arg-1 = "1", "CREATIVE" or "C":
+						set player's gamemode to CREATIVE
+					if arg-1 = "2", "ADVENTURE" or "A":
+						set player's gamemode to ADVENTURE
+					if arg-1 = "3", "SPECTATOR" or "SP":
+						set player's gamemode to SPECTATOR
+
+					set {_} to convert text arg-1 to uppercase
+					if arg-1 = "0", "1", "2" or "3":
+						set {_idText} to "&6(%{_Essentials::Gamemode::ID::%arg-1%}%)"
+					if {_idText} is set:
+						send "%{TTLPrefix}% &eSpielmodus auf &6%{_}% &6%{_idText}% &egewechselt"
+					else:
+						send "%{TTLPrefix}% &eSpielmodus auf &6%{_}% &egewechselt"
+				else:
+					set {_p} to arg-2 parsed as player
+					if {_p} is not online:
+						send "%{TTLPrefix}% &4%arg-2% &cist nicht Online!"
+					else:
+						if arg-1 = "0", "SURVIVAL" or "SU":
+							set {_p}'s gamemode to SURVIVAL
+						if arg-1 = "1", "CREATIVE" or "C":
+							set {_p}'s gamemode to CREATIVE
+						if arg-1 = "2", "ADVENTURE" or "A":
+							set {_p}'s gamemode to ADVENTURE
+						if arg-1 = "3", "SPECTATOR" or "SP":
+							set {_p}'s gamemode to SPECTATOR
+
+						set {_} to convert text arg-1 to uppercase
+						if arg-1 = "0", "1", "2" or "3":
+							set {_idText} to "&6(%{_Essentials::Gamemode::ID::%arg-1%}%)"
+						if {_idText} is set:
+							send "%{TTLPrefix}% &eSpielmodus von &6%{_p}% &eauf &6%{_}% &6%{_idText}% &egewechselt"
+						else:
+							send "%{TTLPrefix}% &eSpielmodus von &6%{_p}% &e auf &6%{_}% &egewechselt"
+			else:
+				send "%{TTLPrefix}% {@NoPermsMsg}"
+
+command /kick [<text>]:
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Supporter"), isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_ALLOWED} to true
+		else:
+			set {_ALLOWED} to true
+
+		if {_ALLOWED}:
+			if arg does not exist:
+				send "%{TTLPrefix}% &cNutze: /Kick <Spieler>"
+			else:
+				loop all players:
+					if loop-player's name == arg:
+						set {_targetedPlayer} to loop-player
+
+				if {_targetedPlayer} is set:
+					if {_targetedPlayer} is online:
+						set {_kicker} to command sender
+						kick ({_targetedPlayer} parsed as offlineplayer) due to "%nl%%{TTLPrefix}% &e&LKICK%nl%%nl%        &cDu wurdest von &e%{_kicker}% &cvom Server gekickt."
+					else:
+						send "%{TTLPrefix}% &e&lKICK &8&l» &4%arg% &ckonnte nicht gefunden werden!"
+				else:
+					send "%{TTLPrefix}% &e&lKICK &8&l» &4%arg% &ckonnte nicht gefunden werden!"
+
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+
+command /ban [<text>] [<text>]:
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_ALLOWED} to true
+		else:
+			set {_ALLOWED} to true
+		if {_ALLOWED}:
+			if arg-1 or arg-2 does not exist:
+				send "%{TTLPrefix}% &cNutze: /Ban <Spieler> <Grund>"
+			else:
+				if command sender == CONSOLE:
+					SetDatabaseVal(arg-1, "CONSOLE", "Banned", arg-2)
+				else:
+					SetDatabaseVal(arg-1, player's name, "Banned", arg-2)
+				SetDatabaseVal(arg-1, "CONSOLE", "Banner", "%command sender%")
+				wait a tick
+				UpdateDatabaseVars(arg-1, "Banned")
+				UpdateDatabaseVars(arg-1, "Banner")
+				wait a tick
+				kick (arg-1 parsed as offlineplayer) due to "&cDu wurdest vom ToTheLimit.net Netzwerk &4PERMANENT &cverbannt!%nl%%nl%&7Grund &8» &e%{Essentials::%arg-1%::Banned}%%nl%&7Banner &8» &e%{Essentials::%arg-1%::Banner}%%nl%%nl%&aDu kannst auf &eToTheLimit.net/go/ea &aeinen Entbannungsantrag%nl%&astellen oder auf &6Shop.ToTheLimit.net &aeine Entbannung &6kaufen&a."
+				send "%{TTLPrefix}% &e&lBAN &8&l» &c%arg-1% wurde &4PERMANENT &cvom ToTheLimit.net Netzwerk verbannt!"
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+
+on connect:
+	UpdateDatabaseVars(player's name, "Banned")
+	UpdateDatabaseVars(player's name, "Banner")
+
+	wait a tick
+
+	{Essentials::%player%::Banned} is set
+	{Essentials::%player%::Banned} != "NO_BANNED"
+	{Essentials::%player%::Banned} != "File not found!"
+	kick player due to "&cDu wurdest vom ToTheLimit.net Netzwerk &4PERMANENT &cverbannt!%nl%%nl%&7Grund &8» &e%{Essentials::%player%::Banned}%%nl%&7Banner &8» &e%{Essentials::%player%::Banner}%%nl%%nl%&aDu kannst auf &eToTheLimit.net/go/ea &aeinen Entbannungsantrag%nl%&astellen oder auf &6Shop.ToTheLimit.net &aeine Entbannung &6kaufen&a."
+
+command /tempban [<text>] [<text>] [<timespan>]:
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_ALLOWED} to true
+				set {_commandSender} to player's name
+		else:
+			set {_ALLOWED} to true
+			set {_commandSender} to "CONSOLE"
+		if {_ALLOWED}:
+			if arg-1 or arg-2 or arg-3 does not exist:
+				send "%{TTLPrefix}% &cNutze: /TempBan <Spieler> <Grund> <Zeit>"
+			else:
+				UpdateDatabaseVars(arg-1, "Banned")
+				UpdateDatabaseVars(arg-1, "Banner")
+
+				wait a tick
+
+				if {Essentials::%arg-1%::Banned} != "NO_BANNED":
+					send "%{TTLPrefix}% &4%arg-1% &cwurde bereits &4PERMANENT &cvom ToTheLimit.net Netzwerk verbannt!"
+				else:
+					set {_now} to "%convert date now to unix%"
+					SetDatabaseVal(arg-1, {_commandSender}, "Now-Temp-Ban", {_now})
+					SetDatabaseVal(arg-1, {_commandSender}, "Timestamp-Temp-Ban", "%arg-3%")
+					SetDatabaseVal(arg-1, {_commandSender}, "Reason-Temp-Ban", arg-2)
+
+					SetDatabaseVal(arg-1, {_commandSender}, "Banner", arg-2)
+
+					wait a tick
+
+					UpdateDatabaseVars(arg-1, "Now-Temp-Ban")
+					UpdateDatabaseVars(arg-1, "Timestamp-Temp-Ban")
+					UpdateDatabaseVars(arg-1, "Reason-Temp-Ban")
+
+					wait 3 ticks
+
+					SetDatabaseVal(arg-1, {_commandSender}, "Reason-Temp-Ban", {Essentials::%arg-1%::Banned})
+
+					set {Essentials::%arg-1%::Timestamp-Temp-Ban} to {Essentials::%arg-1%::Timestamp-Temp-Ban} parsed as timespan
+					set {Essentials::%arg-1%::Now-Temp-Ban} to {Essentials::%arg-1%::Now-Temp-Ban} parsed as integer
+
+					set {_unbannedDate} to convert unix {Essentials::%arg-1%::Now-Temp-Ban} to date
+
+					add {Essentials::%arg-1%::Timestamp-Temp-Ban} to {_unbannedDate}
+					set {_unbannedDateUnix} to convert date {_unbannedDate} to unix
+					set {_newUnbannedDate} to convert unix {_unbannedDateUnix} to date formatted as "dd.MM.yy HH:mm:ss"
+
+					kick (arg-1 parsed as offlineplayer) due to "&cDu wurdest vom ToTheLimit.net Netzwerk &4TEMPORÄR &cverbannt!%nl%%nl%&7Grund &8» &e%arg-2%%nl%&7Du wirst automatisch am &8» &e&n%{_newUnbannedDate}%&r &8« &7entbannt.%nl%%nl%%nl%&aDu kannst auf &eToTheLimit.net/go/ea &aeinen Entbannungsantrag%nl%&astellen oder auf &6Shop.ToTheLimit.net &aeine Entbannung &6kaufen&a."
+					send "%{TTLPrefix}% &e&lTEMPBAN &8&l» &c%arg-1% wurde &4TEMPORÄR &cvom ToTheLimit.net Netzwerk verbannt!"
+
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+
+command /pardon [<text>]:
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_ALLOWED} to true
+				set {_commandSender} to player's name
+		else:
+			set {_ALLOWED} to true
+			set {_commandSender} to "CONSOLE"
+		if {_ALLOWED}:
+			if arg-1 does not exist:
+				send "%{TTLPrefix}% &cNutze: /Pardon <Spieler>"
+			else:
+				SetDatabaseVal(arg, player's name, "Now-Temp-Ban", "NO_NOW_TEMP_BAN")
+				SetDatabaseVal(arg, player's name, "Timestamp-Temp-Ban", "NO_TEMP_BAN_TIMESTAMP")
+				SetDatabaseVal(arg, player's name, "Reason-Temp-Ban", "NO_TEMP_BAN_REASON")
+				SetDatabaseVal(arg, player's name, "Banner", "NO_BANNER")
+				SetDatabaseVal(arg, player's name, "Banned", "NO_BANNED")
+
+				create file "plugins/Essentials/tmp/tempban/%arg-1%.yml"
+				write "%command sender%" at line 1 to file "plugins/Essentials/tmp/tempban/%arg-1%.yml"
+
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+
+on connect:
+	UpdateDatabaseVars(player's name, "Now-Temp-Ban")
+	UpdateDatabaseVars(player's name, "Timestamp-Temp-Ban")
+	UpdateDatabaseVars(player's name, "Reason-Temp-Ban")
+
+	wait 3 ticks
+
+	{Essentials::%player%::Timestamp-Temp-Ban} is set
+	{Essentials::%player%::Timestamp-Temp-Ban} != "NO_TEMP_BAN_TIMESTAMP"
+	{Essentials::%player%::Timestamp-Temp-Ban} != "File not found!"
+	set {Essentials::%player%::Timestamp-Temp-Ban} to {Essentials::%player%::Timestamp-Temp-Ban} parsed as timespan
+	set {Essentials::%player%::Now-Temp-Ban} to {Essentials::%player%::Now-Temp-Ban} parsed as integer
+
+	set {_date} to convert unix {Essentials::%player%::Now-Temp-Ban} to date
+	set {_unbannedDate} to convert unix {Essentials::%player%::Now-Temp-Ban} to date
+
+	add {Essentials::%player%::Timestamp-Temp-Ban} to {_unbannedDate}
+	set {_unbannedDateUnix} to convert date {_unbannedDate} to unix
+	set {_newUnbannedDate} to convert unix {_unbannedDateUnix} to date formatted as "dd.MM.yy HH:mm:ss"
+
+	set {_dateUnix} to convert date {_date} to unix
+	set {_dateWithSeconds} to convert unix {Essentials::%player%::Now-Temp-Ban} to date formatted as "dd.MM.yy HH:mm:ss"
+
+	if difference between now and {_date} is more than or equal to {Essentials::%player%::Timestamp-Temp-Ban}:
+		SetDatabaseVal("%player%", player's name, "Now-Temp-Ban", "NO_NOW_TEMP_BAN")
+		SetDatabaseVal("%player%", player's name, "Timestamp-Temp-Ban", "NO_TEMP_BAN_TIMESTAMP")
+		SetDatabaseVal(player's name, player's name, "Reason-Temp-Ban", "NO_TEMP_BAN_REASON")
+	else:
+		kick player due to "&cDu wurdest vom ToTheLimit.net Netzwerk &4TEMPORÄR &cverbannt!%nl%%nl%&7Grund &8» &e%{Essentials::%player%::Reason-Temp-Ban}%%nl%&7Du wirst automatisch am &8» &e&n%{_newUnbannedDate}%&r &8« &7entbannt.%nl%%nl%%nl%&aDu kannst auf &eToTheLimit.net/go/ea &aeinen Entbannungsantrag%nl%&astellen oder auf &6Shop.ToTheLimit.net &aeine Entbannung &6kaufen&a."
+
+command /mute [<text>] [<text>]:
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_ALLOWED} to true
+		else:
+			set {_ALLOWED} to true
+		if {_ALLOWED}:
+			if arg-1 or arg-2 does not exist:
+				send "%{TTLPrefix}% &cNutze: /Mute <Spieler> <Grund>"
+			else:
+				SetDatabaseVal(arg-1, "CONSOLE", "Muter", "%command sender%")
+				if command sender == CONSOLE:
+					SetDatabaseVal(arg-1, "CONSOLE", "Muted", arg-2)
+				else:
+					SetDatabaseVal(arg-1, player's name, "Muted", arg-2)
+				wait a tick
+				UpdateDatabaseVars(arg-1, "Muted")
+				wait a tick
+				set {_p} to (arg-1 parsed as offlineplayer)
+
+				loop 150 times:
+					send "" to {_p}
+
+				send "%{TTLPrefix}% &e&lMUTE &8&l» &4%arg-1% &cwurde &4PERMANENT &cgemutet!"
+
+				send "&8&m--------------------------------------------------" to {_p}
+				send " " to {_p}
+				send "&8» &cDu wurdest &4PERMANENT &cvon &4%command sender% &cgemutet!" to {_p}
+				send "&8» &cGrund &8» &4%arg-2%" to {_p}
+				send " " to {_p}
+				send "&8&m--------------------------------------------------" to {_p}
+
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+
+
+command /tempmute [<text>] [<text>] [<timespan>]:
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_ALLOWED} to true
+				set {_commandSender} to player's name
+		else:
+			set {_ALLOWED} to true
+			set {_commandSender} to "CONSOLE"
+		if {_ALLOWED}:
+			if arg-1 or arg-2 or arg-3 does not exist:
+				send "%{TTLPrefix}% &cNutze: /TempMute <Spieler> <Grund> <Zeit>"
+			else:
+				set {_now} to "%convert date now to unix%"
+				SetDatabaseVal(arg-1, {_commandSender}, "Now-Temp-Mute", {_now})
+				SetDatabaseVal(arg-1, {_commandSender}, "Timestamp-Temp-Mute", "%arg-3%")
+				SetDatabaseVal(arg-1, {_commandSender}, "Reason-Temp-Mute", arg-2)
+				SetDatabaseVal(arg-1, {_commandSender}, "Muter", "%command sender%")
+
+				wait a tick
+
+				UpdateDatabaseVars(arg-1, "Now-Temp-Mute")
+				UpdateDatabaseVars(arg-1, "Timestamp-Temp-Mute")
+				UpdateDatabaseVars(arg-1, "Reason-Temp-Mute")
+				UpdateDatabaseVars(arg-1, "Muter")
+
+				wait 3 ticks
+
+				set {Essentials::%arg-1%::Timestamp-Temp-Mute} to {Essentials::%arg-1%::Timestamp-Temp-Mute} parsed as timespan
+				set {Essentials::%arg-1%::Now-Temp-Mute} to {Essentials::%arg-1%::Now-Temp-Mute} parsed as integer
+
+				set {_unmutedDate} to convert unix {Essentials::%arg-1%::Now-Temp-Mute} to date
+
+				add {Essentials::%arg-1%::Timestamp-Temp-Mute} to {_unmutedDate}
+				set {_unmutedDateUnix} to convert date {_unmutedDate} to unix
+				set {_newUnmutedDate} to convert unix {_unmutedDateUnix} to date formatted as "dd.MM.yy HH:mm:ss"
+
+				send "%{TTLPrefix}% &e&lTEMPMUTE &8&l» &c%arg-1% wurde &4TEMPORÄR &cgemutet!"
+
+				set {_p} to (arg-1 parsed as offlineplayer)
+				loop 150 times:
+					send "" to {_p}
+
+				send "&8&m--------------------------------------------------" to {_p}
+				send " " to {_p}
+				send "&8» &cDu wurdest &4TEMPORÄR &c&o(bis zum %{_newUnmutedDate}%) &cvon%nl%  &8» &4%command sender% &cgemutet!" to {_p}
+				send "&8» &cGrund &8» &4%{Essentials::%arg-1%::Reason-Temp-Mute}%" to {_p}
+				send " " to {_p}
+				send "&8&m--------------------------------------------------" to {_p}
+
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+
+
+command /unmute [<text>]:
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_ALLOWED} to true
+				set {_commandSender} to player's name
+		else:
+			set {_ALLOWED} to true
+			set {_commandSender} to "CONSOLE"
+		if {_ALLOWED}:
+			if arg-1 does not exist:
+				send "%{TTLPrefix}% &cNutze: /Unmute <Spieler>"
+			else:
+				SetDatabaseVal(arg, player's name, "Now-Temp-Mute", "NO_NOW_TEMP_MUTE")
+				SetDatabaseVal(arg, player's name, "Timestamp-Temp-Mute", "NO_TEMP_MUTE_TIMESTAMP")
+				SetDatabaseVal(arg, player's name, "Reason-Temp-Mute", "NO_TEMP_MUTE_REASON")
+				SetDatabaseVal(arg, player's name, "Muter", "NO_MUTER")
+				SetDatabaseVal(arg, player's name, "Muted", "NO_MUTED")
+
+				create file "plugins/Essentials/tmp/tempmute/%arg-1%.yml"
+				write "%command sender%" at line 1 to file "plugins/Essentials/tmp/tempmute/%arg-1%.yml"
+
+		else:
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+
+on chat:
+	UpdateDatabaseVars(player's name, "Muter")
+	UpdateDatabaseVars(player's name, "Muted")
+	wait a tick
+	if {Essentials::%player%::Muted} != "NO_MUTED":
+		{Essentials::%player%::Muted} is set
+		send "&8&m--------------------------------------------------"
+		send " "
+		send "&8» &cDu wurdest &4PERMANENT &cvon &4%{Essentials::%player%::Muter}% &cgemutet!"
+		send "&8» &cGrund &8» &4%{Essentials::%player%::Muted}%"
+		send " "
+		send "&8&m--------------------------------------------------"
+	else:
+		if {Essentials::%player%::Muter} != "NO_MUTER":
+			{Essentials::%player%::Muter} is set
+			UpdateDatabaseVars(player's name, "Now-Temp-Mute")
+			UpdateDatabaseVars(player's name, "Timestamp-Temp-Mute")
+			UpdateDatabaseVars(player's name, "Reason-Temp-Mute")
+
+			wait a tick
+
+			if {Essentials::%player%::Timestamp-Temp-Mute} != "NO_TEMP_MUTE_TIMESTAMP":
+				{Essentials::%player%::Timestamp-Temp-Mute} is set
+				set {Essentials::%player%::Timestamp-Temp-Mute} to {Essentials::%player%::Timestamp-Temp-Mute} parsed as timespan
+				set {Essentials::%player%::Now-Temp-Mute} to {Essentials::%player%::Now-Temp-Mute} parsed as integer
+
+				set {_date} to convert unix {Essentials::%player%::Now-Temp-Mute} to date
+				set {_unmutedDate} to convert unix {Essentials::%player%::Now-Temp-Mute} to date
+
+				add {Essentials::%player%::Timestamp-Temp-Mute} to {_unmutedDate}
+				set {_unmutedDateUnix} to convert date {_unmutedDate} to unix
+				set {_newUnmutedDate} to convert unix {_unmutedDateUnix} to date formatted as "dd.MM.yy HH:mm:ss"
+
+				set {_dateUnix} to convert date {_date} to unix
+				set {_dateWithSeconds} to convert unix {Essentials::%player%::Now-Temp-Mute} to date formatted as "dd.MM.yy HH:mm:ss"
+
+				if difference between now and {_date} is more than or equal to {Essentials::%player%::Timestamp-Temp-Mute}:
+					SetDatabaseVal("%player%", player's name, "Now-Temp-Mute", "NO_NOW_TEMP_MUTE")
+					SetDatabaseVal("%player%", player's name, "Timestamp-Temp-Mute", "NO_TEMP_MUTE_TIMESTAMP")
+					SetDatabaseVal(player's name, player's name, "Reason-Temp-Mute", "NO_TEMP_MUTE_REASON")
+				else:
+					send "&8&m--------------------------------------------------"
+					send " "
+					send "&8» &cDu wurdest &4TEMPORÄR &c&o(bis zum %{_newUnmutedDate}%) &cvon%nl%  &8» &4%{Essentials::%player%::Muter}% &cgemutet!"
+					send "&8» &cGrund &8» &4%{Essentials::%player%::Reason-Temp-Mute}%"
+					send " "
+					send "&8&m--------------------------------------------------"
+
+command /report [<text>]:
+	trigger:
+		if command sender == CONSOLE:
+			send "%{TTLPrefix}% &cNur Spieler können andere Spieler reporten..."
+			stop
+
+		if arg does not exist:
+			send "%{TTLPrefix}% &e&lREPORT &8&l» &cNutze: /Report <Spieler>"
+		else:
+			if arg == player's name:
+				send "%{TTLPrefix}% &e&lREPORT &8&l» &cDu kannst Dich nicht selbst reporten!"
+			else:
+				set {_bed} to bed:14 named "&e&n(Cross-)Teaming" with lore "||&7Der Spieler &eteamt unerlaubt mit einem oder weiteren Spielern&7.||&7Welche sich gegenseitig helfen indem sie sich||&7nicht attackieren und Waffen bzw. Items teilen."
+
+				open chest with 5 rows named "Report » %arg%" to player
+				set slot 4 of player's current inventory to (arg parsed as offlineplayer)'s skull named "&e%arg%"
+				set slot 19 of player's current inventory to iron sword named "&e&nClientmodifikation (Hacks)" with lore "||&7Der Spieler nutzt eine &eunerlaubte||&eClientmodifikation &7welche Ihm unfaire Vorteile||&7gegenüber anderen Spieler erweißt."
+				set slot 20 of player's current inventory to books_and_a_quill named "&e&nChat-Verhalten" with lore "||&7Der Spieler &everhält sich im Chat nicht ordnungsgemäß&7.||&7Unter anderem wäre dies für Fälle wie:||  &8» &eBeleidigungen||  &8» &eServer-Werbung||  &8» &eSonstiges"
+				set slot 21 of player's current inventory to {_bed} parsed as item
+				set slot 22 of player's current inventory to flint and steel named "&e&nTrolling" with lore "||&7Der Spieler ist in Deinem Team und||&ezündet Dich beispielsweise an &7oder||&ebaut den Block unter Dir ab&7..."
+				set slot 23 of player's current inventory to cobweb named "&e&nSpawntrapping" with lore "||&7Der Spieler &ekillt seinen Gegner in einem||&enicht-taktischen Weg &7und dass &eüber eine längere Zeit&7."
+				set slot 24 of player's current inventory to player head named "&e&nSkin" with lore "||&7Der Spieler hat einen unangenehmen Skin||&7u.a. &eRassistisch&7, &eVerstörend o.s."
+				set slot 25 of player's current inventory to sandstone named "&e&nBauen" with lore "||&7Der Spieler baut bspw. ein &eHakenkreuz&7."
+
+				while slot 21 of player's current inventory != {_bed}:
+					set slot 21 of player's current inventory to {_bed}
+					wait 1 tick
+
+on inventory click:
+	if inventory name of player's current inventory contains "Report » ":
+		cancel event
+		set {_list::*} to inventory name of player's current inventory split at " » "
+		set {_p} to {_list::2}
+		set {_reason} to uncoloured name of clicked item
+		websocket send "DatabaseIO||Report||%player%||%{_p}%||%{_reason}%" through {DatabaseIO_WS}
+		close player's inventory
+
+command /fly [<text>]:
+	trigger:
+		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+		else:
+			if arg does not exist:
+				if player's flight state is true:
+					set player's flight state to false
+					send "%{TTLPrefix}% &eFlugmodus deaktiviert!"
+				else:
+					set player's flight state to true
+					send "%{TTLPrefix}% &eFlugmodus aktiviert!"
+			else:
+				set {_p} to arg parsed as player
+				if {_p} is not online:
+					send "%{TTLPrefix}% &4%arg% &cist nicht Online!"
+				else:
+					if {_p}'s flight state is true:
+						set {_p}'s flight state to false
+						send "%{TTLPrefix}% &e%{_p}%'s Flugmodus deaktiviert!"
+					else:
+						set {_p}'s flight state to true
+						send "%{TTLPrefix}% &e%{_p}%'s Flugmodus aktiviert!"
+
+command /heal [<player>]:
+	trigger:
+		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+		else:
+			if arg-player exist:
+				heal arg-player
+				set arg-player's food level to 20
+				send "%{TTLPrefix}% &e%arg-player% wurde geheilt!"
+			else:
+				heal player
+				set player's food level to 20
+				send "%{TTLPrefix}% &eDu wurdest geheilt!"
+
+command /kill [<text>]:
+	trigger:
+		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+		else:
+			if arg does not exist:
+				kill player
+			else:
+				set {_p} to arg parsed as player
+				if {_p} is not online:
+					send "%{TTLPrefix}% &4%arg% &cist nicht Online!"
+				else:
+					kill {_p}
+					send "%{TTLPrefix}% &e%{_p}% wurde getötet!"
+
+command /smite [<text>] [<integer=1>]:
+	trigger:
+		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+		else:
+			if arg-1 does not exist:
+				send "%{TTLPrefix}% &cNutze: /Smite <Spieler> [Zahl]"
+			else:
+				set {_p} to arg-1 parsed as player
+				if {_p} is not online:
+					send "%{TTLPrefix}% &4%arg-1% &cist nicht Online!"
+				else:
+					set {Smite.%{_p}%} to true
+					loop arg-integer times:
+						strike lightning at {_p}
+						wait a tick
+					delete {Smite.%{_p}%}
+					send "%{TTLPrefix}% &e%{_p}% wurde vom Blitz getroffen!"
+
+command /tphere [<text>]:
+	trigger:
+		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+		else:
+			if arg-1 does not exist:
+				send "%{TTLPrefix}% &cNutze: /tphere <Spieler>"
+			else:
+				set {_p} to arg-1 parsed as player
+				if {_p} is not online:
+					send "%{TTLPrefix}% &4%arg-1% &cist nicht Online!"
+				else:
+					teleport {_p} to player
+					send "%{TTLPrefix}% &e%{_p}% wurde zu Dir teleportiert!"
+
+command /invsee [<text>]:
+	trigger:
+		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+		else:
+			if arg does not exist:
+				send "%{TTLPrefix}% &cNutze: /invsee <Spieler>"
+			else:
+				set {_p} to arg parsed as player
+				if {_p} is not online:
+					send "%{TTLPrefix}% &4%arg% &cist nicht Online!"
+				else:
+					show {_p}'s inventory to player
+
+command /enchant <enchantment type>:
+	aliases: /ench
+	trigger:
+		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+		else:
+			enchant player's tool with arg
+
+command /forcechat [<text>] [<text>]:
+	aliases: /fc
+	trigger:
+		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+		else:
+			if arg-1 or arg-2 does not exist:
+				send "%{TTLPrefix}% &cNutze: /fc <Spieler> <Nachricht>"
+			else:
+				set {_p} to arg-1 parsed as player
+				if {_p} is not online:
+					send "%{TTLPrefix}% &4%arg-1% &cist nicht Online!"
+				else:
+					make {_p} say coloured arg-2
+
+command /cage [<text>]:
+	trigger:
+		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+		else:
+			if arg does not exist:
+				send "%{TTLPrefix}% &cNutze: /invsee <Spieler>"
+			else:
+				set {_p} to arg parsed as player
+				if {_p} is not online:
+					send "%{TTLPrefix}% &4%arg% &cist nicht Online!"
+				else:
+					teleport {_p} to location 7 meters above {_p}'s location
+					set block below {_p} to glass
+
+					set {_nloc} to location 1 meter north of {_p}
+					set block at {_nloc} to glass
+					set block 1 meter above {_nloc} to glass
+
+					set {_eloc} to location 1 meter east of {_p}
+					set block at {_eloc} to glass
+					set block 1 meter above {_eloc} to glass
+
+					set {_sloc} to location 1 meter south of {_p}
+					set block at {_sloc} to glass
+					set block 1 meter above {_sloc} to glass
+
+					set {_wloc} to location 1 meter west of {_p}
+					set block at {_wloc} to glass
+					set block 1 meter above {_wloc} to glass
+
+					set block 2 meters above {_p} to glass
+
+command /BuildMode [<player>] [<text>]:
+	trigger:
+		if command sender != CONSOLE:
+			if isRank(player's name, "Builder"), isRank(player's name, "Moderator"), isRank(player's name, "Admin"), isRank(player's name, "Developer"), isRank(player's name, "Co-Owner") or isRank(player's name, "Owner"):
+				set {_} to true
+		else:
+			set {_} to true
+
+		if {_}:
+			if arg-2 does not exist:
+				send "&e&lBUILDMODE &8&l» &cNutze: /BuildMode (Spieler) <ON/OFF>"
+				stop
+			if arg-player exist:
+				if arg-2 = "ON":
+					set {BuildMode.%arg-player%} to true
+					send "&e&lBUILDMODE &8&l» &aAktiviert!" to arg-player
+					send "&e&lBUILDMODE &8&l» &aFür %arg-player% aktiviert!"
+				else:
+					delete {BuildMode.%arg-player%}
+					send "&e&lBUILDMODE &8&l» &cDeaktiviert!" to arg-player
+					send "&e&lBUILDMODE &8&l» &cFür %arg-player% deaktiviert!"
+			else:
+				if arg-2 exist:
+					if arg-2 = "ON":
+						set {BuildMode.%player%} to true
+						send "&e&lBUILDMODE &8&l» &aAktiviert!"
+					else:
+						delete {BuildMode.%player%}
+						send "&e&lBUILDMODE &8&l» &cDeaktiviert!"
+		else:
+			send "%{TTLPrefix}% &cDu hast keine Rechte für diesen Befehl!"
+
+command /void [<text>] <integer>:
+	trigger:
+		if isRank(player's name, "Gamer"), isRank(player's name, "Premium") or isRank(player's name, "TTL"):
+			send "%{TTLPrefix}% {@NoPermsMsg}"
+		else:
+			if arg-1 does not exist:
+				send "%{TTLPrefix}% &cNutze: /invsee <Spieler>"
+			else:
+				set {_p} to arg-1 parsed as player
+				if {_p} is not online:
+					send "%{TTLPrefix}% &4%arg-1% &cist nicht Online!"
+				else:
+					loop blocks below {_p}:
+						if {_a} != arg-integer:
+							add 1 to {_a}
+							set loop-block to air
+							teleport {_p} to location of loop-block
+							wait a tick
+
+							if y-coords of {_p} < 1:
+								exit loop
+						else:
+							exit loop
