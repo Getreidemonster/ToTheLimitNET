@@ -26,7 +26,7 @@ on load:
 	set {Gadgets.ShopItem.Melonen.Price} to 150
 
 on inventory click:
-	if "%inventory name of player's current inventory%" = "Gadgets":
+	if inventory name of player's current inventory = "Gadgets":
 		cancel event
 
 		set {_gadget} to uncoloured name of clicked item
@@ -56,7 +56,7 @@ on inventory click:
 				send "{@prefix} &7&oLinksklicke mit Deinem Gadget, um Dein &d&oKosmetik-Buch &7&oItem wieder zuerlangen!"
 				close player's inventory
 
-	if "%inventory name of player's current inventory%" contains "» " and " kaufen":
+	if inventory name of player's current inventory contains "» " and " kaufen":
 		set {_title::*} to inventory name of player's current inventory split at " "
 		set {_gadget} to {_title::2}
 		set {_price} to uncoloured lore of slot 22 of player's current inventory
@@ -266,7 +266,7 @@ on pick up:
 
 on leftclick:
 	if player's tool = ender pearl, gold horse armor, pig meat, firework, TNT or melon block:
-		if "%uncoloured name of player's tool%" contains "Enderperlen ", "Paintball ", "Raketenschweinchen ", "Feuerwerkskörper ", "PrimedTNT " or "Melonen ":
+		if uncoloured name of player's tool contains "Enderperlen ", "Paintball ", "Raketenschweinchen ", "Feuerwerkskörper ", "PrimedTNT " or "Melonen ":
 			cancel event
 			set player's tool to enchanted book named "&dKosmetik Buch" with lore "||&7Rechtsklicke um es zu benutzen."
 

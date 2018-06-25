@@ -15,7 +15,7 @@ command /stats [<text>]:
 		set slot 4 of player's current inventory to {_pSkull} named "&e%{_p}%'s Stats"
 
 		while true:
-			if "%inventory name of player's current inventory%" = "Stats » %{_p}%":
+			if inventory name of player's current inventory = "Stats » %{_p}%":
 				UpdateDatabaseVars({_p}, "SkyWars-Datas-Kills")
 				UpdateDatabaseVars({_p}, "SkyWars-Datas-Tode")
 				UpdateDatabaseVars({_p}, "SkyWars-Datas-Wins")

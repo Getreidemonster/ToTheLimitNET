@@ -106,14 +106,14 @@ on offhand switch:
 		cancel event
 
 on rightclick with dye:
-	if "%uncoloured name of player's tool%" = "Alle Spieler sichtbar":
+	if uncoloured name of player's tool = "Alle Spieler sichtbar":
 		SetDatabaseVal(player's name, player's name, "SpielerVerstecker", "Nur Premium-Spieler sichtbar")
 		UpdateDatabaseVars(player's name, "SpielerVerstecker")
 		set {_} to true
 
 		reveal all players from event-player
 	
-	else if "%uncoloured name of player's tool%" = "Nur Premium-Spieler sichtbar":
+	else if uncoloured name of player's tool = "Nur Premium-Spieler sichtbar":
 		SetDatabaseVal(player's name, player's name, "SpielerVerstecker", "Nur Teamler sichtbar")
 		UpdateDatabaseVars(player's name, "SpielerVerstecker")
 		set {_} to true
@@ -124,7 +124,7 @@ on rightclick with dye:
 			if {Rank.%loop-player%} != "Premium" or "TTL":
 				hide loop-player from event-player
 	
-	else if "%uncoloured name of player's tool%" = "Nur Teamler sichtbar":
+	else if uncoloured name of player's tool = "Nur Teamler sichtbar":
 		SetDatabaseVal(player's name, player's name, "SpielerVerstecker", "Alle Spieler unsichtbar")
 		UpdateDatabaseVars(player's name, "SpielerVerstecker")
 		set {_} to true
@@ -135,7 +135,7 @@ on rightclick with dye:
 			if {Rank.%loop-player%} != "Builder", "Supporter", "Moderator", "Admin", "Developer", "Co-Owner" or "Owner":
 				hide loop-player from event-player
 
-	else if "%uncoloured name of player's tool%" = "Alle Spieler unsichtbar":
+	else if uncoloured name of player's tool = "Alle Spieler unsichtbar":
 		SetDatabaseVal(player's name, player's name, "SpielerVerstecker", "Alle Spieler sichtbar")
 		UpdateDatabaseVars(player's name, "SpielerVerstecker")
 		set {_} to true

@@ -111,7 +111,7 @@ function KosmetikBuchOpenManager(p: player, kosmetik: text):
 			set slot 54 - loop-int of {_p}'s current inventory to black glass named " "
 
 		while true:
-			if "%inventory name of {_p}'s current inventory%" = "Gadgets":
+			if inventory name of {_p}'s current inventory = "Gadgets":
 				UpdateDatabaseVars({_p}'s name, "Coins")
 				wait a tick
 				set slot 4 of {_p}'s current inventory to sun flower named "&eCoins: %{Coins.%{_p}%}%"
@@ -139,7 +139,7 @@ function KosmetikBuchOpenManager(p: player, kosmetik: text):
 			set slot 54 - loop-int of {_p}'s current inventory to black glass named " "
 		
 		while true:
-			if "%inventory name of {_p}'s current inventory%" = "Partikel-Effekte":
+			if inventory name of {_p}'s current inventory = "Partikel-Effekte":
 				UpdateDatabaseVars({_p}'s name, "Coins")
 				wait a tick
 				set slot 4 of {_p}'s current inventory to sun flower named "&eCoins: %{Coins.%{_p}%}%"

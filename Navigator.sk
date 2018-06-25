@@ -26,7 +26,7 @@ on rightclick with compass:
 		set slot 41 of player's current inventory to beacon named "&9&oControl&c&oPoints"
 
 on inventory click:
-	if "%inventory name of player's current inventory%" = "Wähle einen Spielmodus aus!":
+	if inventory name of player's current inventory = "Wähle einen Spielmodus aus!":
 		cancel event
 
 		clicked item is set
@@ -37,7 +37,7 @@ on inventory click:
 
 		add player to {NavigatingPlayers::*}
 
-	if "%inventory name of player's current inventory%" contains " Servers":
+	if inventory name of player's current inventory contains " Servers":
 		cancel event
 		set {_server} to uncoloured name of clicked item
 		send player to bungeecord server "%{_server}%"
@@ -49,7 +49,7 @@ every tick:
 	loop {NavigatingPlayers::*}:
 		if loop-value is online:
 			set {_p} to loop-value
-			if "%inventory name of {_p}'s current inventory%" contains " Servers":
+			if inventory name of {_p}'s current inventory contains " Servers":
 				set {_l::*} to inventory name of {_p}'s current inventory split at " "
 				set {_server} to {_l::1}
 				displayServersGUI({_p}, {_server})
