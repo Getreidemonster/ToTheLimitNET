@@ -1,0 +1,30 @@
+function updateScoreboard(p: player):
+	wait a tick
+
+	if {_p} is online:
+		wipe {_p}'s sidebar
+		set name of sidebar of {_p} to "&f&lTOTHELIMIT.NET"
+		set score "" in sidebar of {_p} to 15
+		set score "&aOnline" in sidebar of {_p} to 14
+		set score "&8» &e%size of all players% &8/ &e%getMaxPlayers()%" in sidebar of {_p} to 13
+		set score " " in sidebar of {_p} to 12
+		set score "&3Rank" in sidebar of {_p} to 11
+		set score "&8» &e%{Rank.%{_p}%}%" in sidebar of {_p} to 10
+		set score "  " in sidebar of {_p} to 9
+		set score "&6Coins" in sidebar of {_p} to 8
+		set score "&8» &e%{Coins.%{_p}%}%" in sidebar of {_p} to 7
+		set score "   " in sidebar of {_p} to 6
+		set score "&cForum" in sidebar of {_p} to 5
+		set score "&8» &eTTL.net" in sidebar of {_p} to 4
+		set score "    " in sidebar of {_p} to 3
+		set score "&bTwitter" in sidebar of {_p} to 2
+		set score "&8» &eTwitter.com/ToTheLimitNET" in sidebar of {_p} to 1
+		set score "&f " in sidebar of {_p} to 0
+
+join:
+	loop all players:
+		updateScoreboard(loop-player)
+
+quit:
+	loop all players:
+		updateScoreboard(loop-player)
