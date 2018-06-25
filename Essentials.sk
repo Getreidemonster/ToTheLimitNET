@@ -553,7 +553,7 @@ command /invsee [<text>]:
 				if {_p} is not online:
 					send "%{TTLPrefix}% &4%arg% &cist nicht Online!"
 				else:
-					show {_p}'s inventory to player
+					open {_p}'s inventory to player
 
 command /enchant <enchantment type>:
 	aliases: /ench
