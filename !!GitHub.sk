@@ -23,7 +23,10 @@ sub "pullGitHubRepo":
 	loop {_scriptfiles::*}:
 		set {_} to loop-value
 		replace all "plugins\Skript\scripts\" with "" in {_}
-		set {_scriptfiles::%loop-index%} to relative path of {_}
+		if {_} contains "!!GitHub.sk":
+			remove loop-value from {_scriptfiles::*}
+		else:
+			set {_scriptfiles::%loop-index%} to relative path of {_}
 
 	loop {_scriptfiles::*}:
 		console command "sk disable %loop-value%"
