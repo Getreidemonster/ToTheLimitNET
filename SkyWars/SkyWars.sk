@@ -1,0 +1,269 @@
+options:
+	prefix: &e&lSKYWARS &8&l»
+	minPlayers: 2
+
+function SkyWars_GameState(state: text):
+	set {SkyWars::State} to {_state}
+	loop all dropped items:
+		delete loop-value
+
+	if {_state} = "LOBBY" or "GAMEOVER":
+		loop all players:
+			teleport loop-player to {SkyWars::Spawn}
+			clear loop-player's inventory
+			set slot 0 of loop-player's inventory to chest named "&eSkyWars &8» &eKits"
+			set loop-player's level to 0
+			set loop-player's level progress to 0
+			set {SkyWars::%loop-player%::SpectatorMode} to "FALSE"
+
+		if {_state} = "GAMEOVER":
+			set all players's gamemode to SURVIVAL
+			loop 6 times:
+				if {SkyWars::State} = "GAMEOVER":
+					if (6 - loop-int) > 0:
+						if (6 - loop-int) != 1:
+							send all players title "&c%6 - loop-int%" with subtitle "&cSekunden restartet der Server..." for 1 second
+						else:
+							send all players title "&c%6 - loop-int%" with subtitle "&cSekunde restartet der Server..." for 1 second
+					else:
+						#SkyWars_GameState("LOBBY")
+						#wait 1 second
+						send all players title "&cServer restart" with subtitle "&cDer Server restartet jetzt." for 1 second
+						set {SkyWars::State} to "RESTART"
+						all players command "/l"
+						wait 3 seconds
+						SkyWars_ResetMap("Forest")
+						console command "sk reload SkyWars"
+						console command "sk reload SkyWars_RandomChestLoot"
+						loop all players:
+							clear loop-player's inventory
+						console command "sk reload SkyWars"
+
+				else:
+					exit loop
+
+				wait 1 second
+
+	if {_state} = "COUNTDOWN":
+		set {_c} to 0
+		set {SkyWars::Countdown} to (30 + 1)
+
+		while true:
+			add 1 to {_c}
+			if {SkyWars::State} = "COUNTDOWN":
+				if size of all players >= {@minPlayers}:
+					set level of all players to ({SkyWars::Countdown} - {_c})
+
+					if ({SkyWars::Countdown} - {_c}) = 30, 20, 10, 5, 4, 3 or 2:
+						send all players title "&e%{SkyWars::Countdown} - {_c}%" with subtitle "&aSekunden noch..." for 1 second
+					if ({SkyWars::Countdown} - {_c}) = 1:
+						send all players title "&e%{SkyWars::Countdown} - {_c}%" with subtitle "&aSekunde noch..." for 1 second
+
+					if ({SkyWars::Countdown} - {_c}) < 1:
+						send all players title "&eDie Runde beginnt jetzt!" with subtitle "&eViel Glück!" for 1 second
+						SkyWars_GameState("INGAME")
+						loop all players:
+							if {SkyWars::%loop-player%::Kit} is not set:
+								set {SkyWars::%loop-player%::Kit} to "Bauarbeiter"
+							SkyWarsEquipKit(loop-player, {SkyWars::%loop-player%::Kit})
+						exit loop
+				else:
+					send "{@prefix} &cZu wenige Spieler - restarte den Countdown." to ALL PLAYERS
+					set level of all players to 0
+					set {SkyWars::State} to "LOBBY"
+					exit loop
+
+			else:
+				exit loop
+
+			wait 1 second
+
+	if {_state} = "INGAME":
+		loop all players:
+			add 1 to {_i}
+			teleport2location(loop-player, "SW-Spawn-%{_i}%")
+
+function SkyWars_ResetMap(world: text):
+	console command "mv unload %{_world}%"
+	console command "mv remove %{_world}%"
+	delete dir "%{_world}%"
+
+	copy dir "plugins/SkyWars/worldreset/%{_world}%" to ""
+
+	if file "plugins/VoidGenerator.jar" exists:
+		console command "mv import %{_world}% normal -g VoidGenerator"
+	else:
+		console command "mv import %{_world}% normal -t FLAT"
+
+load:
+	SkyWars_GameState("LOBBY")
+
+	create directory "plugins/SkyWars"
+	create directory "plugins/SkyWars/worldreset"
+
+	if file "plugins/SkyWars/locations/PlayerSpawns.yml" does not exist:
+		create file "plugins/SkyWars/locations/PlayerSpawns.yml"
+
+	set {_dirs::*} to dir ""'s files
+	loop {_dirs::*}:
+		"%loop-value%" does not contain "world", "logs", "plugins" or "Wartelobby"
+		file "%loop-value%" is a dir
+		set {SkyWars::Map} to relative path of loop-value
+
+	set time in world "%{SkyWars::Map}%" to 12:00pm
+	set weather in world "%{SkyWars::Map}%" to sun
+
+	delete {BugFix::*}
+
+at 12:01pm:
+	set time in world "%{SkyWars::Map}%" to 12:00pm
+
+on weather change:
+	cancel event
+	set weather in event-world to sun
+
+on join:
+	set join message to ""
+	UpdateDatabaseVars(player's name, "RankName")
+	UpdateDatabaseVars(player's name, "AutoNicker")
+	wait a tick
+	clear player's inventory
+	teleport2location(player, "SW-Spawn")
+	set player's level to 0
+	set player's level progress to 0
+	set {SkyWars::%player%::Kit} to "Bauarbeiter"
+	set {SkyWars::%player%::SpectatorMode} to "FALSE"
+
+	if {SkyWars::State} = "LOBBY" or "COUNTDOWN":
+		set slot 0 of player's inventory to chest named "&eSkyWars &8» &eKits"
+
+		if {AutoNicker.%player%.Mode} != "AUTONICKER_ON":
+			if {BugFix::%player%::DuplicatedJoinMessage} != "TRUE":
+				set {_c} to "%{DatabaseIO::PlayerDatas::Rank::Color::%{Rank.%player%}%}%"
+				send "&8» %{_c}%%player% &7hat die Runde betreten!" to ALL PLAYERS
+				set {BugFix::%player%::DuplicatedJoinMessage} to "TRUE"
+
+	if {SkyWars::State} = "INGAME" or "GAMEOVER":
+		set player's gamemode to SPECTATOR
+
+every second:
+	if {SkyWars::State} = "LOBBY":
+		if size of all players >= {@minPlayers}:
+			SkyWars_GameState("COUNTDOWN")
+
+	if {SkyWars::State} = "INGAME":
+		loop all players:
+			if {SkyWars::%loop-player%::SpectatorMode} = "FALSE":
+				add 1 to {_alive}
+
+		if {_alive} < 2:
+			if {BugFix::DuplicatedWinner} != "TRUE":
+				set {BugFix::DuplicatedWinner} to "TRUE"
+				loop all players:
+					if {SkyWars::%loop-player%::SpectatorMode} = "FALSE":
+						set {_lastPlayer} to loop-player
+						send loop-player title "&e%{_lastPlayer}%" with subtitle "&ahat die Runde gewonnen!" for 1 second
+					teleport2location(loop-player, "SW-Spawn")
+					heal loop-player
+					set loop-player's food level to 20
+				UpdateDatabaseVars({_lastPlayer}'s name, "Coins")
+				wait a tick
+				set {_c} to {Coins.%{_lastPlayer}%} + 100
+				SetDatabaseVal({_lastPlayer}'s name, "", "Coins", "%{_c}%")
+				send "{@prefix} &e%{_lastPlayer}% &ahat die Runde SkyWars gewonnen (&e+100 Coins&a)" to ALL PLAYERS
+				send "{@prefix} &aGlückwunsch, Du hast gewonnen!" to ("%{_lastPlayer}%" parsed as offlineplayer)
+				send "{@prefix} &e+100 Coins" to ("%{_lastPlayer}%" parsed as offlineplayer)
+				SkyWars_GameState("GAMEOVER")
+
+every 30 seconds:
+	if {SkyWars::State} = "LOBBY":
+		if size of all players < {@minPlayers}:
+			send "{@prefix} &cWarte auf weitere Spieler..." to ALL PLAYERS
+
+quit:
+	set leave message to ""
+	UpdateDatabaseVars(player's name, "RankName")
+	UpdateDatabaseVars(player's name, "AutoNicker")
+	wait a tick
+	if {AutoNicker.%player%.Mode} != "AUTONICKER_ON":
+		if {BugFix::%player%::DuplicatedLeaveMessage} != "TRUE":
+			set {_c} to "%{DatabaseIO::PlayerDatas::Rank::Color::%{Rank.%player%}%}%"
+			send "&8« %{_c}%%player% &7hat die Runde verlassen!" to ALL PLAYERS
+			set {BugFix::%player%::DuplicatedLeaveMessage} to "TRUE"
+
+command /SkyWarsAdmin [<text>] [<text>]:
+	permission: op
+	permission message: &cDu hast nicht die notwendigen Rechte für diesen Befehl!
+	trigger:
+		if arg-1 = "setspawn":
+			set {SkyWars::Spawn} to player's location
+			if file "plugins/SkyWars/locations/Spawn.yml" exists:
+				delete file "plugins/SkyWars/locations/Spawn.yml"
+
+			create file "plugins/SkyWars/locations/Spawn.yml"
+			write "Location: %player's location%" at line 1 to file "plugins/SkyWars/locations/Spawn.yml"
+
+			send "{@prefix} &aDu hast erfolgreich den Spawn gesetzt!"
+
+on break:
+	if {SkyWars::State} = "LOBBY", "COUNTDOWN" or "GAMEOVER":
+		{BuildMode::%player%} != true
+		cancel event
+on place:
+	if {SkyWars::State} = "LOBBY", "COUNTDOWN" or "GAMEOVER":
+		{BuildMode::%player%} != true
+		cancel event
+on drop:
+	if {SkyWars::State} = "LOBBY", "COUNTDOWN" or "GAMEOVER":
+		{BuildMode::%player%} != true
+		cancel event
+on pick up:
+	if {SkyWars::State} = "LOBBY", "COUNTDOWN" or "GAMEOVER":
+		{BuildMode::%player%} != true
+		cancel event
+on hunger meter change:
+	if {SkyWars::State} = "LOBBY", "COUNTDOWN" or "GAMEOVER":
+		{BuildMode::%player%} != true
+		set player's food level to 20
+on damage:
+	if {SkyWars::State} = "LOBBY", "COUNTDOWN" or "GAMEOVER":
+		{BuildMode::%victim%} != true
+		cancel event
+on inventory click:
+	if {SkyWars::State} = "LOBBY", "COUNTDOWN" or "GAMEOVER":
+		{BuildMode::%player%} != true
+		cancel event
+
+on death:
+	victim is player
+	set death message to ""
+
+	wait a tick
+	skellett force respawn victim
+	set {SkyWars::%victim%::SpectatorMode} to "TRUE"
+
+	if attacker is player:
+		teleport victim to attacker
+	else:
+		teleport victim to {SkyWars::Spawn}
+
+command /start:
+	trigger:
+		if isRank(player's name, "Gamer"):
+			send "{@prefix} &cKaufe Dir den &6Premium &coder &bTTL &cRang um Vorteile wie Countdown nutzen zu können!"
+		else:
+			if {SkyWars::State} = "COUNTDOWN":
+				if {SkyWars::Countdown} <= 6:
+					send "{@prefix} &cDie Runde beginnt in kürze..."
+				else:
+					set {SkyWars::Countdown} to 6
+					send "{@prefix} &aDu hast den Countdown erfolgreich minimalisiert!"
+			if {SkyWars::State} = "LOBBY":
+				send "{@prefix} &cWarte auf weitere Spieler..."
+			if {SkyWars::State} = "INGAME":
+				send "{@prefix} &cDie Runde hat bereits begonnen!"
+			if {SkyWars::State} = "GAMEOVER":
+				send "{@prefix} &cDie Runde ist bereits vorbei!"
+
+on craft of chest:
+	cancel event

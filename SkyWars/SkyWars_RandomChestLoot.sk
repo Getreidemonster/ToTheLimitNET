@@ -1,0 +1,84 @@
+load:
+	loop {SkyWars::RandomChestsLocations::*}:
+		loop 28 times:
+			set slot loop-int - 1 of block at location of loop-value-1 to air
+	delete {SkyWars::RandomChestsLocations::*}
+
+on rightclick on chest:
+	if "%{SkyWars::RandomChestsLocations::*}%" does not contain "%event-location%":
+		add "%event-location%" to {SkyWars::RandomChestsLocations::*}
+
+		add (random integer between 4 and 64) of oak wooden plank to {_SkyWars::ChestLoot::*}
+		add (random integer between 4 and 64) of stone to {_SkyWars::ChestLoot::*}
+		add (random integer between 4 and 64) of brick blocks to {_SkyWars::ChestLoot::*}
+		add (random integer between 4 and 64) of sandstone to {_SkyWars::ChestLoot::*}
+
+		chance of 90%:
+			add wooden sword to {_SkyWars::ChestLoot::*}
+			add wooden shovel to {_SkyWars::ChestLoot::*}
+			add wooden pickaxe to {_SkyWars::ChestLoot::*}
+			add wooden axe to {_SkyWars::ChestLoot::*}
+			add leather helmet to {_SkyWars::ChestLoot::*}
+			add leather chestplate to {_SkyWars::ChestLoot::*}
+			add leather leggings to {_SkyWars::ChestLoot::*}
+			add leather boots to {_SkyWars::ChestLoot::*}
+		chance of 82%:
+			add gold sword to {_SkyWars::ChestLoot::*}
+			add gold shovel to {_SkyWars::ChestLoot::*}
+			add gold pickaxe to {_SkyWars::ChestLoot::*}
+			add gold axe to {_SkyWars::ChestLoot::*}
+			add gold helmet to {_SkyWars::ChestLoot::*}
+			add gold chestplate to {_SkyWars::ChestLoot::*}
+			add gold leggings to {_SkyWars::ChestLoot::*}
+			add gold boots to {_SkyWars::ChestLoot::*}
+		chance of 80%:
+			add (random integer between 2 and 64) of apples to {_SkyWars::ChestLoot::*}
+			add chain helmet to {_SkyWars::ChestLoot::*}
+			add chain chestplate to {_SkyWars::ChestLoot::*}
+			add chain leggings to {_SkyWars::ChestLoot::*}
+			add chain boots to {_SkyWars::ChestLoot::*}
+		chance of 75%:
+			add (random integer between 2 and 16) of eggs to {_SkyWars::ChestLoot::*}
+			add (random integer between 2 and 16) of snowballs to {_SkyWars::ChestLoot::*}
+		chance of 50%:
+			add iron sword to {_SkyWars::ChestLoot::*}
+			add iron shovel to {_SkyWars::ChestLoot::*}
+			add iron pickaxe to {_SkyWars::ChestLoot::*}
+			add iron axe to {_SkyWars::ChestLoot::*}
+			add iron helmet to {_SkyWars::ChestLoot::*}
+			add iron chestplate to {_SkyWars::ChestLoot::*}
+			add iron leggings to {_SkyWars::ChestLoot::*}
+			add iron boots to {_SkyWars::ChestLoot::*}
+		chance of 45%:
+			add golden leggings to {_SkyWars::ChestLoot::*}
+		chance of 41%:
+			add iron axe to {_SkyWars::ChestLoot::*}
+		chance of 40%:
+			add (random integer between 1 and 2) of lava bucket to {_SkyWars::ChestLoot::*}
+		chance of 40%:
+			add (random integer between 1 and 2) of water bucket to {_SkyWars::ChestLoot::*}
+		chance of 40%:
+			add (random integer between 1 and 2) of flint and steel to {_SkyWars::ChestLoot::*}
+		chance of 37%:
+			add iron chestplate to {_SkyWars::ChestLoot::*}
+		chance of 33%:
+			add diamond pickaxe to {_SkyWars::ChestLoot::*}
+		chance of 30%:
+			add diamond axe to {_SkyWars::ChestLoot::*}
+		chance of 25%:
+			add (random integer between 1 and 3) of diamonds to {_SkyWars::ChestLoot::*}
+		chance of 20%:
+			add (random integer between 1 and 3) of ender pearls to {_SkyWars::ChestLoot::*}
+			add diamond helmet to {_SkyWars::ChestLoot::*}
+			add diamond chestplate to {_SkyWars::ChestLoot::*}
+			add diamond leggings to {_SkyWars::ChestLoot::*}
+			add diamond boots to {_SkyWars::ChestLoot::*}
+		else:
+			add leather helmet to {_SkyWars::ChestLoot::*}
+
+		loop 28 times:
+			set slot loop-int - 1 of event-block to air
+
+		loop {_SkyWars::ChestLoot::*}:
+			set {_s} to random integer between 0 and 27
+			add loop-value to slot {_s} of event-block

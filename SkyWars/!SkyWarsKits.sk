@@ -1,0 +1,240 @@
+aliases:
+	pig meat = 319
+	sun flower = 175
+	waterlily = 111
+	cookedLachsFisch = 350:1
+
+options:
+	prefix: &e&lSKYWARS &8&l»
+
+load:
+	delete {SkyWars::*}
+	delete {SkyWarsKits::*}
+
+	set {SkyWarsKits::Item::1} to pig meat
+	set {SkyWarsKits::Name::1} to "Schinken"
+	set {SkyWarsKits::Preis::1} to 7500
+	set {SkyWarsKits::Lore::1} to "||&7Beinhaltet:||  &7» &eSchinken||  &7» &e1x Holzschwert||  &7» &e32x Sandsteine||  &7» &e1x pinker Lederhelm||||&7Spezialfähigkeit:||  &7» &eDass Schinken verrät's Dir...||  &7» &eZusätzlich hungert man als Schinken nicht"
+
+	set {SkyWarsKits::Item::2} to waterlily
+	set {SkyWarsKits::Name::2} to "Frosch"
+	set {SkyWarsKits::Preis::2} to 4200
+	set {SkyWarsKits::Lore::2} to "||&7Beinhaltet:||  &7» &e4x Seerosenblätter||  &7» &e1x Wassereimer||  &7» &e16x Äpfel||  &7» &e16x Ziegelsteine||  &7» &e1x grüner Lederhelm||||&7Spezialfähigkeit:||  &7» &eKann auf Seerosenblätter weit springen"
+
+	set {SkyWarsKits::Item::3} to iron boots
+	set {SkyWarsKits::Name::3} to "Stomper"
+	set {SkyWarsKits::Preis::3} to 5000
+	set {SkyWarsKits::Lore::3} to "||&7Beinhaltet:||  &7» &e1x Stomper Boots||  &7» &e48x Ziegelsteine||  &7» &e16x Äpfel||  &7» &e1x weier Lederhelm||||&7Spezialfähigkeit:||  &7» &eKann durch dass sneaken||    &7» &ehoch geschleudert werden und beim Fallschaden erhalten||  &7» &edie Spieler in der Nähe vom Stomper erheblichen Schaden!"
+
+	set {SkyWarsKits::Item::4} to golden axe
+	set {SkyWarsKits::Name::4} to "Thor"
+	set {SkyWarsKits::Preis::4} to 7500
+	set {SkyWarsKits::Lore::4} to "||&7Beinhaltet:||  &7» &e1x Thor's Axt||  &7» &e48x Ziegelsteine||  &7» &e2x Goldäpfel||  &7» &e1x Goldhelm||||&7Spezialfähigkeit:||  &7» &eKann durch dass schwingen||    &7» &eder Axt Blitze schleudern!"
+
+	set {SkyWarsKits::Item::5} to glowing stick
+	set {SkyWarsKits::Name::5} to "Knocker"
+	set {SkyWarsKits::Preis::5} to 2500
+	set {SkyWarsKits::Lore::5} to "||&7Beinhaltet:||  &7» &e1x Knüppel :3 (Rückstoß II)||  &7» &e8x Steaks||  &7» &e32x Sandsteine||  &7» &e1x roter Lederhelm"
+
+	set {SkyWarsKits::Item::6} to firework rocket
+	set {SkyWarsKits::Name::6} to "FireworkPlayer"
+	set {SkyWarsKits::Preis::6} to 6000
+	set {SkyWarsKits::Lore::6} to "!?!??"
+
+	set {SkyWarsKits::Item::7} to bone meal
+	set {SkyWarsKits::Name::7} to "Jedi"
+	set {SkyWarsKits::Preis::7} to 150000000
+	set {SkyWarsKits::Lore::7} to "!?!??"
+
+	set {SkyWarsKits::Item::8} to blaze rod
+	set {SkyWarsKits::Name::8} to "Napalm"
+	set {SkyWarsKits::Preis::8} to 150000000
+	set {SkyWarsKits::Lore::8} to "!?!??"
+
+	set {SkyWarsKits::Item::9} to ender pearl
+	set {SkyWarsKits::Name::9} to "Enderman"
+	set {SkyWarsKits::Preis::9} to 150000000
+	set {SkyWarsKits::Lore::9} to "!?!??"
+
+	set {SkyWarsKits::Item::10} to gold hoe
+	set {SkyWarsKits::Name::10} to "FireStorm"
+	set {SkyWarsKits::Preis::10} to 150000000
+	set {SkyWarsKits::Lore::10} to "!?!??"
+
+	loop {SkyWarsKits::Name::*}:
+		set {SkyWars::Kits::%loop-index%} to "%loop-value%"
+		set {SkyWars::KitsPreise::%loop-value%} to {SkyWarsKits::Preis::%loop-index%}
+
+	console command "sk reload SkyWars"
+
+function SkyWarsKits(p: player):
+	loop {SkyWars::Kits::*}:
+		UpdateDatabaseVars({_p}'s name, "SkyWars-Kit-%loop-value%")
+	wait a tick
+	open chest with 3 rows named "SkyWars » Kits" to {_p}
+	
+	set {_notOwning} to "&cDu besitzt dieses Kit noch nicht"
+	set {_Owning} to "&aDu besitzt dieses Kit"
+
+	set {_s} to 0
+	loop {SkyWars::Kits::*}:
+		set {_kit} to loop-value
+		add 1 to {_s}
+		add 1 to {_i}
+		set {_ucKit} to convert text "%{_kit}%" to uppercase
+		if {SkyWars::%{_p}%::%{_kit}%} = "SKYWARS_KIT_FALSE_%{_ucKit}%":
+			set slot {_s} - 1 of {_p}'s current inventory to ({SkyWarsKits::Item::%{_i}%}) named "&7Kit: &e%{SkyWarsKits::Name::%{_i}%}% &c(NICHT GEKAUFT)" with lore "&7Preis: &e%{SkyWarsKits::Preis::%{_i}%}% Coins||%{SkyWarsKits::Lore::%{_i}%}%"
+		else:
+			set slot {_s} - 1 of {_p}'s current inventory to ({SkyWarsKits::Item::%{_i}%}) named "&7Kit: &e%{SkyWarsKits::Name::%{_i}%}% &a(GEKAUFT)" with lore "&7Preis: &e&m%{SkyWarsKits::Preis::%{_i}%}% Coins||%{SkyWarsKits::Lore::%{_i}%}%"
+
+function SkyWarsEquipKit(p: player, kit: text):
+	clear {_p}'s inventory
+
+	if {_kit} = "Bauarbeiter":
+		give {_p} wooden pickaxe
+		give {_p} 32 brick blocks
+		give {_p} 32 stone
+
+	if {_kit} = "Schinken":
+		give {_p} wooden sword
+		give {_p} pig meat named "&dSchinken"
+		give {_p} 32 sandstone
+		set {_p}'s helmet to leather helmet
+		dye {_p}'s helmet pink
+
+	if {_kit} = "Frosch":
+		give {_p} water bucket
+		give {_p} 4 waterlily
+		give {_p} 16 brick blocks
+		give {_p} 8 apples
+		set {_p}'s helmet to leather helmet
+		dye {_p}'s helmet green
+
+	if {_kit} = "Stomper":
+		set {_p}'s boots to unbreakable iron boots named "&eStomper Boots"
+		give {_p} 48 sandstone
+		give {_p} 8 apples
+		set {_p}'s helmet to leather helmet
+		dye {_p}'s helmet white
+
+	if {_kit} = "Thor":
+		give {_p} golden axe named "&6Thor's Axt"
+		give {_p} 48 brick blocks
+		give {_p} 2 golden apples
+		set {_p}'s helmet to golden helmet
+
+	if {_kit} = "Knocker":
+		give {_p} stick of knockback 2 named "&b&oKnüppel :3"
+		give {_p} 8 steaks
+		give {_p} 32 sandstone
+		set {_p}'s helmet to leather helmet
+		dye {_p}'s helmet red
+
+	if {_kit} = "Jedi":
+		give {_p} unbreakable iron sword named "&f&oMöge die Macht mit Dir sein"
+		give {_p} 322:1
+		give {_p} 32 sandstone
+		set {_p}'s helmet to leather helmet
+		dye {_p}'s helmet white
+
+	if {_kit} = "Napalm":
+		give {_p} blaze rod of fire aspect 1 named "&6Napalm-Zepter"
+		give {_p} 322:1
+		give {_p} 32 sandstone
+		set {_p}'s helmet to leather helmet
+		dye {_p}'s helmet white
+
+	if {_kit} = "Enderman":
+		give {_p} 3 of ender pearls
+		set {_p}'s helmet to leather helmet
+		dye {_p}'s helmet black
+
+	if {_kit} = "FireworkPlayer":
+		give {_p} firework rocket
+		set {_p}'s helmet to leather helmet
+		dye {_p}'s helmet orange
+
+	if {_kit} = "FireStorm":
+		give {_p} unbreakable gold hoe named "&6Fire&8Storm"
+		set {_p}'s helmet to leather helmet
+		dye {_p}'s helmet gold
+
+
+on rightclick with chest:
+	if player's tool = chest named "&eSkyWars &8» &eKits":
+		cancel event
+		SkyWarsKits(player)
+
+on inventory click:
+	if "%inventory name of player's current inventory%" = "SkyWars » Kits":
+		cancel event
+
+		set {_kitItem} to clicked item
+		set {_kitName} to uncoloured name of clicked item
+
+		clicked item is set:
+		clicked item != air
+		
+		replace all "Kit: ", " (NICHT GEKAUFT)" and " (GEKAUFT)" with "" in {_kitName}
+
+		UpdateDatabaseVars(player's name, "SkyWars-Kit-%{_kitName}%")
+		wait a tick
+
+		set {_s} to clicked slot + 1
+		
+		if {SkyWars::%player%::%{_kitName}%} = "SKYWARS_KIT_FALSE_%{_kitName}%":
+			openShopGUI(player, "» Kit %{_kitName}% kaufen", {_kitItem})
+		else:
+			set {SkyWars::%player%::Kit} to {_kitName}
+			send "{@prefix} &aKit &e%{_kitName}% &aerfolgreich ausgewählt!"
+			updateScoreboard(player)
+			close player's inventory
+
+	if "%inventory name of player's current inventory%" contains " kaufen":
+		cancel event
+		set {_title::*} to inventory name of player's current inventory split at " "
+		set {_kit} to {_title::3}
+		UpdateDatabaseVars(player's name, "Coins")
+		wait a tick
+
+		if clicked item = emerald block:
+			set {_neededCoins} to {SkyWars::KitsPreise::%{_kit}%} - {Coins.%player%}
+
+			if {Coins.%player%} >= {SkyWars::KitsPreise::%{_kit}%}:
+				set {_newCoins} to {_neededCoins} * (-1)
+				send "{@prefix} &c-%{SkyWars::KitsPreise::%{_kit}%}% Coins"
+				send "{@prefix} &aKit &e%{_kit}% &aerfolgreich für &e%{SkyWars::KitsPreise::%{_kit}%}% Coins &agekauft!"
+				SetDatabaseVal(player's name, player's name, "Coins", "%{_newCoins}%")
+				SetDatabaseVal(player's name, "", "SkyWars-Kit-%{_kit}%", "SKYWARS_KIT_TRUE_%convert text {_kit} to uppercase%")
+				set {SkyWars::%player%::Kit} to {_kitName}
+				send "{@prefix} &aKit &e%{_kitName}% &aerfolgreich ausgewählt!"
+				updateScoreboard(player)
+			else:
+				send "{@prefix} &cDir fehlen noch &4%{_neededCoins}% Coins!"
+
+			close player's inventory
+
+		if clicked item = redstone block:
+			send "{@prefix} &cKaufvorgang abgebrochen."
+			close player's inventory
+
+function openShopGUI(p: player, title: text, item: item):
+	open chest with 6 rows named "%{_title}%" to {_p}
+	loop 54 times:
+		set slot 54 - loop-int of {_p}'s current inventory to black glass named " "
+
+	set slot 22 of {_p}'s current inventory to {_item}
+
+	loop 3 times:
+		set slot (26 + loop-int) of {_p}'s current inventory to emerald block named "&aKAUFEN"
+		set slot (35 + loop-int) of {_p}'s current inventory to emerald block named "&aKAUFEN"
+		set slot (44 + loop-int) of {_p}'s current inventory to emerald block named "&aKAUFEN"
+
+		set slot (32 + loop-int) of {_p}'s current inventory to redstone block named "&cABBRECHEN"
+		set slot (41 + loop-int) of {_p}'s current inventory to redstone block named "&cABBRECHEN"
+		set slot (50 + loop-int) of {_p}'s current inventory to redstone block named "&cABBRECHEN"
+
+	UpdateDatabaseVars({_p}'s name, "Coins")
+	wait a tick
+	set slot 4 of {_p}'s current inventory to sun flower named "&eCoins: %{Coins.%{_p}%}%"
+

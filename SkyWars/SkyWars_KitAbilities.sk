@@ -1,0 +1,151 @@
+aliases:
+	pig meat = 319
+	waterlily = 111
+
+on rightclick with pig meat:
+	if player's tool = pig meat named "&dSchinken":
+		if {SkyWars::%player%::Kit} = "Schinken":
+			apply potion of strength of tier 3 to player for 6 seconds
+			apply potion of regeneration of tier 3 to player for 6 seconds
+			apply potion of speed of tier 3 to player for 6 seconds
+			apply potion of resistance of tier 3 to player for 6 seconds
+
+			cooldownItem(player, 5 seconds)
+
+function cooldownItem(p: player, cd: timespan):
+	set {_slot} to "%{_p}'s hotbar slot%"
+	replace all "inventory slot " and " of %{_p}%" with "" in {_slot}
+	set {_slot} to {_slot} parsed as integer
+	set {_item} to slot {_slot} of {_p}'s inventory
+	set slot {_slot} of {_p}'s inventory to barrier named "&c&oWarte noch etwas..."
+	wait {_cd}
+	if {SkyWars::State} = "INGAME":
+		set slot {_slot} of {_p}'s inventory to {_item}
+
+on "org.bukkit.event.player.PlayerStatisticIncrementEvent":
+	if "%event.getStatistic()%" = "JUMP":
+		set {_player} to event.getPlayer()
+
+		if {SkyWars::%{_player}%::Kit} = "Frosch":
+			if block at {_player} = waterlily:
+				push {_player} up at speed 2.5
+				push {_player} forwards at speed 2.87
+				set {SkyWars::%{_player}%::KitAbility} to "NO_DMG_FALL"
+		if {SkyWars::%{_player}%::Kit} = "Kangaroo":
+			push {_player} up at speed 0.275
+			push {_player} forwards at speed 0.275
+
+on damage:
+	damage cause is fall
+	victim is a player
+	{SkyWars::%victim%::Kit} = "Frosch"
+	if {SkyWars::%victim%::KitAbility} = "NO_DMG_FALL":
+		cancel event
+		delete {SkyWars::%victim%::KitAbility}
+
+on sneak toggle:
+	if {SkyWars::%player%::Kit} = "Stomper":
+		if player's boots = unbreakable iron boots named "&eStomper Boots":
+			cancel event
+
+			if {SkyWars::%player%::KitAbility} != "NO_DMG_FALL":
+				if sneak state of player is false:
+					push player up at speed 1.5
+					set {SkyWars::%player%::KitAbility} to "NO_DMG_FALL"
+
+
+click:
+	delete {SkyWars::%player%::KitAbility}
+
+on damage:
+	victim is a player
+	{SkyWars::%victim%::Kit} = "Stomper"
+	if {SkyWars::%victim%::KitAbility} = "NO_DMG_FALL":
+		cancel event
+		delete {SkyWars::%victim%::KitAbility}
+		loop entities in radius 15 around victim:
+			loop-entity != victim
+			damage loop-entity by damage / 2
+
+on rightclick with golden axe:
+	if player's tool = golden axe named "&6Thor's Axt":
+		cancel event
+
+		if targeted block != air:
+			strike lightning at targeted block
+			set block at targeted block to fire
+		else:
+			if player's target is set:
+				player's target != dropped item
+				strike lightning at player's target
+
+		cooldownItem(player, 5 seconds)
+
+on rightclick:
+	if {SkyWars::%player%::Kit} = "Jedi":
+		if player's target is set:
+			cancel event
+
+			while player's target is set:
+				push player's target (direction from player to player's target) at speed 0.025
+				wait a tick
+
+on rightclick with blaze rod:
+	if {SkyWars::%player%::Kit} = "Napalm":
+		if player's tool = blaze rod of fire aspect 1 named "&6Napalm-Zepter":
+			cancel event
+			make player shoot an item projectile of blaze powder at speed 3
+
+on item hit:
+	set {_shooter} to event-player
+	set {_item} to event-item
+
+	if {SkyWars::%{_shooter}%::Kit} == "Napalm":
+		loop entities in radius 5 around event-location:
+			loop-entity != {_shooter} or dropped item
+			ignite loop-entity for 5 seconds
+			push loop-entity (direction from {_shooter} to loop-entity) at speed 0.33
+
+on explosion:
+	cancel event
+
+on rightclick with firework rocket:
+	if {SkyWars::%player%::Kit} = "FireworkPlayer":
+		cancel event
+		if player's target is set:
+			if player's target is not riding firework:
+				spawn firework rocket at player's target
+				make player's target ride last spawned firework
+
+				wait 0.75 second
+
+				damage player's target by 2 hearts
+				set {SkyWars::%player's target%::KitAbility} to "FALL_DMG_DIVIDED_BY_2_FIREWORKPLAYERKIT"
+
+on damage:
+	victim is a player
+	if {SkyWars::%victim%::KitAbility} = "FALL_DMG_DIVIDED_BY_2_FIREWORKPLAYERKIT":
+		delete {SkyWars::%victim%::KitAbility}
+		cancel event
+		damage victim by (damage / 2)
+
+on rightclick with gold hoe:
+	if player's tool = unbreakable gold hoe named "&6Fire&8Storm":
+		cancel event
+		player's target != dropped item
+		if player's target is a living entity:
+			set {_t} to player's target
+		else:
+			set {_t} to location of targeted block of player
+		set {_loc} to location of player's head
+		loop (distance between player's head and {_t} * 10) times:
+			add 0.1 to {_m}
+			set {_loc} to location {_m} meters in front of {_loc}
+			drawDot count 1, particle flame, speed 0.02, colorOffset .5, .5, .5, center {_loc}, visibleRange 32, pulseDelay 2, keepFor 1 tick
+			drawDot count 5, particle smoke, speed 0.02, colorOffset .5, .5, .5, center {_loc}, visibleRange 32, pulseDelay 2, keepFor 1 tick
+			wait a tick
+			create explosion of force 1 at location 4 meters in front of {_loc}
+			if distance between event-player and {_loc} > 8:
+				loop blocks in radius 6 around {_loc}:
+					set loop-block to air
+		ignite {_t} for 4 seconds
