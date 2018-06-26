@@ -1,10 +1,6 @@
 aliases:
 	red_bed = bed:14
 
-load:
-	delete {AllServers::*}
-	set {AllServers::*} to all connected bungeecord servers
-
 on rightclick with compass:
 	if player's tool = compass named "&9Navigator" with lore "||&7Rechtsklicke um es zu benutzen.":
 		cancel event
@@ -49,7 +45,7 @@ on inventory click:
 every 2 seconds:
 	set {AllServers::*} to all connected bungeecord servers
 
-every 3 ticks:
+every tick:
 	loop {NavigatingPlayers::*}:
 		if loop-value is online:
 			set {_p} to loop-value
@@ -57,12 +53,6 @@ every 3 ticks:
 				set {_l::*} to inventory name of {_p}'s current inventory split at " "
 				set {_server} to {_l::1}
 				displayServersGUI({_p}, {_server})
-
-				wait a tick
-				if slot 0 of {_p}'s current inventory = air:
-					send "&e&l%convert text {_server} to uppercase% &8&l» &c&oZurzeit sind alle %{_server}% Servers offline..." to {_p}
-					close {_p}'s inventory
-
 			else:
 				remove "%loop-value%" from {NavigatingPlayers::*}
 		else:
@@ -86,21 +76,27 @@ function displayServersGUI(p: player, server: text):
 		if {_diff} >= 6.5 seconds:
 			set {_s} to {_s} - 1
 		else:
-			if {_diff} is not set:
-				set {_s} to {_s} - 1
-			else:
-				set {_op} to network variable {%{_tServer}%::Onlineplayers}
-				set {_mp} to network variable {%{_tServer}%::Maxplayers}
-				set {_map} to network variable {%{_tServer}%::Map}
-				set {_status} to network variable {%{_tServer}%::Status}
+			set {_op} to network variable {%{_tServer}%::Onlineplayers}
+			set {_mp} to network variable {%{_tServer}%::Maxplayers}
+			set {_map} to network variable {%{_tServer}%::Map}
+			set {_status} to network variable {%{_tServer}%::Status}
 
-				if {_status} = "LOBBY" or "COUNTDOWN":
-					set slot {_s} - 1 of {_p}'s current inventory to light green clay named "&a&n%{_serverName}%" with lore "||&7Spieler: &a%{_op}% &7/ &a%{_mp}%||&7Map: &a%{_map}%||&7Status: &a%{_status}%"
-				if {_status} = "FULL_LOBBY" or "FULL_COUNTDOWN":
-					set {_l::*} to {_status} split at "_"
-					set {_nStatus} to {_l::2}
-					set slot {_s} - 1 of {_p}'s current inventory to gold block named "&6&n%{_serverName}%" with lore "||&7Spieler: &6%{_op}% &7/ &6%{_mp}%||&7Map: &6%{_map}%||&7Status: &6%{_nStatus}%"
-				if {_status} = "RESTART" or "GAMEOVER":
-					set slot {_s} - 1 of {_p}'s current inventory to ice block named "&b&n&o%{_serverName}%" with lore "||&7Spieler: &b0 &7/ &b0||&7Map: &b%{_map}%||&7Status: &bRESTART"
-				if {_status} = "INGAME":
-					set slot {_s} - 1 of {_p}'s current inventory to red clay named "&c&n&o%{_serverName}%" with lore "||&7Spieler: &c%{_op}% &7/ &c%{_mp}%||&7Map: &c%{_map}%||&7Status: &cINGAME"
+			if {_status} = "LOBBY" or "COUNTDOWN":
+				set slot {_s} - 1 of {_p}'s current inventory to light green clay named "&a&n%{_serverName}%" with lore "||&7Spieler: &a%{_op}% &7/ &a%{_mp}%||&7Map: &a%{_map}%||&7Status: &a%{_status}%"
+			if {_status} = "FULL_LOBBY" or "FULL_COUNTDOWN":
+				set {_l::*} to {_status} split at "_"
+				set {_nStatus} to {_l::2}
+				set slot {_s} - 1 of {_p}'s current inventory to gold block named "&6&n%{_serverName}%" with lore "||&7Spieler: &6%{_op}% &7/ &6%{_mp}%||&7Map: &6%{_map}%||&7Status: &6%{_nStatus}%"
+			if {_status} = "RESTART" or "GAMEOVER":
+				set slot {_s} - 1 of {_p}'s current inventory to ice block named "&b&n&o%{_serverName}%" with lore "||&7Spieler: &b0 &7/ &b0||&7Map: &b%{_map}%||&7Status: &bRESTART"
+			if {_status} = "INGAME":
+				set slot {_s} - 1 of {_p}'s current inventory to red clay named "&c&n&o%{_serverName}%" with lore "||&7Spieler: &c%{_op}% &7/ &c%{_mp}%||&7Map: &c%{_map}%||&7Status: &cINGAME"
+
+	#wait 7 seconds
+	#if slot 0 of {_p}'s current inventory = air:
+	#	send "&e&l%convert text {_server} to uppercase% &8&l» &c&oZurzeit sind alle %{_server}% Servers offline..." to {_p}
+	#	close {_p}'s inventory
+
+load:
+	delete {AllServers::*}
+	set {AllServers::*} to all connected bungeecord servers
