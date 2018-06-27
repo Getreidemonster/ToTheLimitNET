@@ -44,6 +44,7 @@ on inventory click:
 
 every 2 seconds:
 	set {AllServers::*} to all connected bungeecord servers
+	broadcast "%{AllServers::*}%"
 
 every tick:
 	loop {NavigatingPlayers::*}:
