@@ -1,1 +1,166 @@
+options:
+	prefix: &e&lGUNGAME
 
+function GunGameEquip(p: player):
+	set {_lvl} to {GunGame.%{_p}%.Level}
+	clear {_p}'s inventory
+
+	if {_lvl} is between 0 and 4:
+		set slot 0 of {_p}'s inventory to unbreakable wooden axe
+	if {_lvl} = 1:
+		set {_p}'s helmet to unbreakable leather helmet
+	if {_lvl} = 2:
+		set {_p}'s helmet to unbreakable leather leggings
+	if {_lvl} = 3:
+		set {_p}'s helmet to unbreakable leather boots
+	if {_lvl} = 4:
+		set {_p}'s helmet to unbreakable leather chestplate
+	if {_lvl} = 5:
+		set slot 0 of {_p}'s inventory to unbreakable wooden sword
+
+	if {_lvl} is between 6 and 10:
+		set slot 0 of {_p}'s inventory to unbreakable wooden sword
+	if {_lvl} = 7:
+		set {_p}'s helmet to unbreakable gold helmet
+	if {_lvl} = 8:
+		set {_p}'s helmet to unbreakable gold leggings
+	if {_lvl} = 9:
+		set {_p}'s helmet to unbreakable gold boots
+	if {_lvl} = 10:
+		set {_p}'s helmet to unbreakable gold chestplate
+	if {_lvl} = 11:
+		set slot 0 of {_p}'s inventory to unbreakable gold sword
+
+	if {_lvl} is between 12 and 16:
+		set slot 0 of {_p}'s inventory to unbreakable wooden axe of knockback 1
+	if {_lvl} = 13:
+		set {_p}'s helmet to unbreakable leather helmet of protection 1
+	if {_lvl} = 14:
+		set {_p}'s helmet to unbreakable leather leggings of protection 1
+	if {_lvl} = 15:
+		set {_p}'s helmet to unbreakable leather boots of protection 1
+	if {_lvl} = 16:
+		set {_p}'s helmet to unbreakable leather chestplate of protection 1
+	if {_lvl} = 17:
+		set slot 0 of {_p}'s inventory to unbreakable wooden sword of knockback 1
+
+	if {_lvl} is between 17 and 21:
+		set slot 0 of {_p}'s inventory to unbreakable gold axe of knockback 1
+	if {_lvl} = 18:
+		set {_p}'s helmet to unbreakable gold helmet of protection 1
+	if {_lvl} = 19:
+		set {_p}'s helmet to unbreakable gold leggings of protection 1
+	if {_lvl} = 20:
+		set {_p}'s helmet to unbreakable gold boots of protection 1
+	if {_lvl} = 21:
+		set {_p}'s helmet to unbreakable gold chestplate of protection 1
+	if {_lvl} = 22:
+		set slot 0 of {_p}'s inventory to unbreakable gold sword of knockback 1
+
+	if {_lvl} is between 22 and 26:
+		set slot 0 of {_p}'s inventory to unbreakable stone axe
+	if {_lvl} = 23:
+		set {_p}'s helmet to unbreakable chain helmet
+	if {_lvl} = 24:
+		set {_p}'s helmet to unbreakable chain leggings
+	if {_lvl} = 25:
+		set {_p}'s helmet to unbreakable chain boots
+	if {_lvl} = 26:
+		set {_p}'s helmet to unbreakable chain chestplate
+	if {_lvl} = 27:
+		set slot 0 of {_p}'s inventory to unbreakable stone sword
+
+	if {_lvl} is between 27 and 31:
+		set slot 0 of {_p}'s inventory to unbreakable stone axe of knockback 1
+	if {_lvl} = 28:
+		set {_p}'s helmet to unbreakable chain helmet of protection 1
+	if {_lvl} = 29:
+		set {_p}'s helmet to unbreakable chain leggings of protection 1
+	if {_lvl} = 30:
+		set {_p}'s helmet to unbreakable chain boots of protection 1
+	if {_lvl} = 31:
+		set {_p}'s helmet to unbreakable chain chestplate of protection 1
+	if {_lvl} = 32:
+		set slot 0 of {_p}'s inventory to unbreakable stone sword of knockback 1
+
+	if {_lvl} is between 32 and 36:
+		set slot 0 of {_p}'s inventory to unbreakable bow named "&b&oSubo"
+	if {_lvl} = 33:
+		set {_p}'s helmet to unbreakable leather helmet of protection 2
+	if {_lvl} = 34:
+		set {_p}'s helmet to unbreakable leather leggings of protection 2
+	if {_lvl} = 35:
+		set {_p}'s helmet to unbreakable leather boots of protection 2
+	if {_lvl} = 36:
+		set {_p}'s helmet to unbreakable leather chestplate of protection 2
+	if {_lvl} = 37:
+		set slot 0 of {_p}'s inventory to unbreakable fishing rod named "&e&oSufrod"
+
+	if {_lvl} is between 38 and 42:
+		set slot 0 of {_p}'s inventory to unbreakable fishing rod
+	if {_lvl} = 43:
+		set {_p}'s helmet to unbreakable iron helmet
+	if {_lvl} = 44:
+		set {_p}'s helmet to unbreakable iron leggings
+	if {_lvl} = 45:
+		set {_p}'s helmet to unbreakable iron boots
+	if {_lvl} = 46:
+		set {_p}'s helmet to unbreakable iron chestplate
+	if {_lvl} = 47:
+		set slot 0 of {_p}'s inventory to unbreakable fishing rod
+
+	if {_lvl} is between 43 and 47:
+		set slot 0 of {_p}'s inventory to unbreakable wooden axe of knockback 2 and sharpness 2
+	if {_lvl} = 47:
+		set {_p}'s helmet to unbreakable iron helmet of protection 1
+	if {_lvl} = 48:
+		set {_p}'s helmet to unbreakable iron leggings of protection 1
+	if {_lvl} = 49:
+		set {_p}'s helmet to unbreakable iron boots of protection 1
+	if {_lvl} = 50:
+		set {_p}'s helmet to unbreakable iron chestplate of protection 1
+	if {_lvl} = 51:
+		set slot 0 of {_p}'s inventory to unbreakable fishing rod
+
+	loop 20 times:
+		if {_p}'s health != 10:
+			heal {_p} by 0.5 heart
+			wait a tick
+		else:
+			exit loop
+
+join:
+	set {GunGame.%player%.Level} to 0
+	GunGameEquip(player)
+	set join message to ""
+	clear player's inventory
+	teleport2location(player, "Spawn")
+	UpdateDatabaseVars(player's name, "RankName")
+	UpdateDatabaseVars(player's name, "AutoNicker")
+	wait a tick
+	if {AutoNicker.%player%.Mode} != "AUTONICKER_ON":
+		set {_c} to "%{DatabaseIO::PlayerDatas::Rank::Color::%{Rank.%player%}%}%"
+		send "&8» %{_c}%%player% &7hat den Server betreten!" to ALL PLAYERS
+
+quit:
+	set leave message to ""
+	UpdateDatabaseVars(player's name, "RankName")
+	UpdateDatabaseVars(player's name, "AutoNicker")
+	wait a tick
+	if {AutoNicker.%player%.Mode} != "AUTONICKER_ON":
+		set {_c} to "%{DatabaseIO::PlayerDatas::Rank::Color::%{Rank.%player%}%}%"
+		send "&8« %{_c}%%player% &7hat den Server betreten!" to ALL PLAYERS
+
+on death:
+	victim is a player
+	wait a tick
+	force respawn victim
+	if {GunGame.%victim%.Level} > 0:
+		remove 1 from {GunGame.%victim%.Level}
+		send "{@prefix} &c-1 Level" to victim
+	GunGameEquip(victim)
+
+	attacker is a player
+	add 1 to {GunGame.%attacker%.Level}
+	send "{@prefix} &a+1 Level" to attacker
+	GunGameEquip(attacker)
