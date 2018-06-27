@@ -164,3 +164,13 @@ on death:
 	add 1 to {GunGame.%attacker%.Level}
 	send "{@prefix} &a+1 Level" to attacker
 	GunGameEquip(attacker)
+
+on any move:
+	if block at player or block below player is water:
+		kill player
+
+on walking on water:
+	if block at player or block below player is water:
+		kill player
+
+

@@ -1,0 +1,12 @@
+# Speedhack
+# Flyhack
+# KillAura
+# Jesus
+
+options:
+	prefix: &e&lTOTHEHACK &8&l&o>
+
+on walking on water:
+	send "{@prefix}" to CONSOLE
+
+

@@ -22,8 +22,8 @@ function updateScoreboard(p: player):
 		set score "&f      " in sidebar of {_p} to 0
 
 join:
-	UpdateDatabaseVars(player's name, "SkyWars-Datas-Kills")
-	UpdateDatabaseVars(player's name, "SkyWars-Datas-Tode")
+	UpdateDatabaseVars(player's name, "Gungame-Datas-Kills")
+	UpdateDatabaseVars(player's name, "Gungame-Datas-Tode")
 	wait a tick
 	loop all players:
 		updateScoreboard(loop-player)
@@ -34,14 +34,14 @@ quit:
 
 death:
 	attacker is a player:
-		UpdateDatabaseVars(attacker's name, "SkyWars-Datas-Kills")
+		UpdateDatabaseVars(attacker's name, "Gungame-Datas-Kills")
 		wait a tick
-		add 1 to {SkyWars.%attacker%.Kills}
-		SetDatabaseVal(attacker's name, "", "SkyWars-Datas-Kills", "SKYWARS_DATAS_KILLS_%{SkyWars.%attacker%.Kills}%")
+		add 1 to {Gungame.%attacker%.Kills}
+		SetDatabaseVal(attacker's name, "", "Gungame-Datas-Kills", "SKYWARS_DATAS_KILLS_%{Gungame.%attacker%.Kills}%")
 		updateScoreboard(attacker)
 	victim is a player:
-		UpdateDatabaseVars(victim's name, "SkyWars-Datas-Tode")
+		UpdateDatabaseVars(victim's name, "Gungame-Datas-Tode")
 		wait a tick
-		add 1 to {SkyWars.%victim%.Tode}
-		SetDatabaseVal(victim's name, "", "SkyWars-Datas-Tode", "SKYWARS_DATAS_TODE_%{SkyWars.%victim%.Tode}%")
+		add 1 to {Gungame.%victim%.Tode}
+		SetDatabaseVal(victim's name, "", "Gungame-Datas-Tode", "SKYWARS_DATAS_TODE_%{Gungame.%victim%.Tode}%")
 		updateScoreboard(victim)
