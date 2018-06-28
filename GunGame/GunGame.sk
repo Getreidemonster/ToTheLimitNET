@@ -140,7 +140,6 @@ join:
 	wait a tick
 	set {GunGame.%player%.Level} to 0
 	GunGameEquip(player)
-	clear player's inventory
 	teleport2location(player, "Spawn")
 
 	if {AutoNicker.%player%.Mode} != "AUTONICKER_ON":
