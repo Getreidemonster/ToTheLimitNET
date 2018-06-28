@@ -3,6 +3,7 @@ sub "pullGitHubRepo":
 
 	add "!!DatabaseIO.sk" to {_gitfiles::*}
 	add "!Locations.sk" to {_gitfiles::*}
+	add "Essentials.sk" to {_gitfiles::*}
 	add "%{_servertype}%/!!!%{_servertype}%_Scoreboard.sk" to {_gitfiles::*}
 	
 	if {_servertype} = "Lobby":
@@ -13,6 +14,10 @@ sub "pullGitHubRepo":
 		add "%{_servertype}%/Navigator.sk" to {_gitfiles::*}
 	else:
 		add "AutoNicker_Addon.sk" to {_gitfiles::*}
+		add "Back2Lobby.sk" to {_gitfiles::*}
+		add "Stats.sk" to {_gitfiles::*}
+		add "Troll.sk" to {_gitfiles::*}
+		add "%{_servertype}%/NetworkVariables.sk" to {_gitfiles::*}
 
 	if {_servertype} = "SkyWars":
 		add "%{_servertype}%/!SkyWarsKits.sk" to {_gitfiles::*}
@@ -62,29 +67,4 @@ load:
 	invoke "pullGitHubRepo" from getServerType()
 unload:
 	invoke "pullGitHubRepo" from getServerType()
-
-function getMaxPlayers() :: integer:
-	set {_properties::*} to file contents of "server.properties"
-	loop {_properties::*}:	
-		set {_} to loop-value
-		if "%{_}%" contains "max-players=":
-			set {_a::*} to {_} split at "="
-			return ({_a::2} parsed as integer)
-	return 0
-
-every second:
-	set network variable {SkyWars-1::OnlinePlayers} to size of all players
-	set network variable {SkyWars-1::MaxPlayers} to getMaxPlayers()
-	set network variable {SkyWars-1::Map} to {SkyWars::Map}
-
-	if size of all players = getMaxPlayers():
-		if {SkyWars::State} contains "FULL_":
-			set network variable {SkyWars-1::Status} to "FULL_%{SkyWars::State}%"
-		else:
-			set network variable {SkyWars-1::Status} to {SkyWars::State}
-	else:
-		set network variable {SkyWars-1::Status} to "%{SkyWars::State}%"
-
-	set network variable {SkyWars-1::lastResponse} to "%convert date now to unix%"
-
 
