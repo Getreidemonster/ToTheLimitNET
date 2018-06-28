@@ -17,7 +17,7 @@ sub "pullGitHubRepo":
 		add "Back2Lobby.sk" to {_gitfiles::*}
 		add "Stats.sk" to {_gitfiles::*}
 		add "Troll.sk" to {_gitfiles::*}
-		add "%{_servertype}%/NetworkVariables.sk" to {_gitfiles::*}
+		# add "%{_servertype}%/NetworkVariables.sk" to {_gitfiles::*}
 
 	if {_servertype} = "SkyWars":
 		add "%{_servertype}%/!SkyWarsKits.sk" to {_gitfiles::*}
