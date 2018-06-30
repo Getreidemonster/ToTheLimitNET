@@ -13,11 +13,11 @@ sub "pullGitHubRepo":
 		add "%{_servertype}%/LobbySystem.sk" to {_gitfiles::*}
 		add "%{_servertype}%/Navigator.sk" to {_gitfiles::*}
 	else:
+		add "%{_servertype}%/NetworkVariables.sk" to {_gitfiles::*}
 		add "AutoNicker_Addon.sk" to {_gitfiles::*}
 		add "Back2Lobby.sk" to {_gitfiles::*}
 		add "Stats.sk" to {_gitfiles::*}
 		add "Troll.sk" to {_gitfiles::*}
-		# add "%{_servertype}%/NetworkVariables.sk" to {_gitfiles::*}
 
 	if {_servertype} = "SkyWars":
 		add "%{_servertype}%/!SkyWarsKits.sk" to {_gitfiles::*}
