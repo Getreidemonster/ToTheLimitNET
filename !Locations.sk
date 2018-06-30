@@ -12,7 +12,7 @@ command /location [<text>] [<text>]:
 
 		UpdateDatabaseVars(player's name, "RankType")
 		wait a tick
-		if {RankType.%player%} != "STAFF_PLAYER":
+		if {Rank.%player%} != "Moderator", "Admin", "Developer", "Co-Owner" or "Owner":
 			send "%{TTLPrefix}% {@prefix} &cDu hast nicht die notwendigen Rechte für diesen Befehl!"
 		else:
 			if arg-1 = "cre" or "create":
