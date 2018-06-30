@@ -1,25 +1,16 @@
-function getMaxPlayers() :: integer:
-	set {_properties::*} to file contents of "server.properties"
-	loop {_properties::*}:	
-		set {_} to loop-value
-		if "%{_}%" contains "max-players=":
-			set {_a::*} to {_} split at "="
-			return ({_a::2} parsed as integer)
-	return 0
-
 every second:
-	set network variable {KnockOut-1::OnlinePlayers} to size of all players
-	set network variable {KnockOut-1::MaxPlayers} to getMaxPlayers()
-	set network variable {KnockOut-1::Map} to {KnockOut::Map}
+	set network variable {%{CORE::SERVER_TYPE}%-1::OnlinePlayers} to size of all players
+	set network variable {%{CORE::SERVER_TYPE}%-1::MaxPlayers} to getMaxPlayers()
+	set network variable {%{CORE::SERVER_TYPE}%-1::Map} to {%{CORE::SERVER_TYPE}%::Map}
 
 	if size of all players = getMaxPlayers():
-		if {KnockOut::State} contains "FULL_":
-			set network variable {KnockOut-1::Status} to "FULL_%{KnockOut::State}%"
+		if {%{CORE::SERVER_TYPE}%::State} contains "FULL_":
+			set network variable {%{CORE::SERVER_TYPE}%-1::Status} to "FULL_%{%{CORE::SERVER_TYPE}%::State}%"
 		else:
-			set network variable {KnockOut-1::Status} to {KnockOut::State}
+			set network variable {%{CORE::SERVER_TYPE}%-1::Status} to {%{CORE::SERVER_TYPE}%::State}
 	else:
-		set network variable {KnockOut-1::Status} to "%{KnockOut::State}%"
+		set network variable {%{CORE::SERVER_TYPE}%-1::Status} to "%{%{CORE::SERVER_TYPE}%::State}%"
 
-	set network variable {KnockOut-1::lastResponse} to convert date now to unix
+	set network variable {%{CORE::SERVER_TYPE}%-1::lastResponse} to convert date now to unix
 
 

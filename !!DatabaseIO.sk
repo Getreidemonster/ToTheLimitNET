@@ -29,15 +29,6 @@ on load:
 	set {DatabaseIO::Prefix::Banned} to "{@TTLPrefix}"
 	set {DatabaseIO::Prefix::Temp-Ban} to "{@TTLPrefix}"
 
-function getMaxPlayers() :: integer:
-	set {_content::*} to file contents of "server.properties"
-	loop {_content::*}:
-		set {_} to loop-value
-		if "%{_}%" contains "max-players=":
-			set {_a::*} to {_} split at "="
-			return ({_a::2} parsed as integer)
-	return 0
-
 websocket client "DatabaseIO_WS":
 	on message:
 		set {_splittedMsg::*} to event-string split at "||"
